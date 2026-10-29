@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section B: FastAPI, Flask & REST APIs — Complete 5 YOE Full-Stack Interview Guide</title>
+  <style>
+    :root {
+      --bg-primary: #F6F8FC;
+      --surface: #FFFFFF;
+      --sidebar-bg: #17243A;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #172033;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --warning-bg: #FFF7E6;
+      --warning-text: #B45309;
+      --success-bg: #EAF8F0;
+      --success-text: #0F766E;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #64748B;
+      --sidebar-active: #F8FAFC;
+      --primary: #6384F9;
+      --primary-hover: #4568E8;
+      --secondary: #14B8A6;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #1E293B;
+      --code-bg: #050811;
+      --code-text: #F8FAFC;
+      --warning-bg: #2C1E04;
+      --warning-text: #FBBF24;
+      --success-bg: #062D24;
+      --success-text: #34D399;
+      --danger-bg: #361010;
+      --danger-text: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; }
+
+    #sidebar { width: 330px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.25s ease; border-right: 1px solid var(--border); }
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    #content-area { flex: 1; display: flex; overflow-y: auto; scroll-behavior: smooth; }
+    #content-stage { flex: 1; padding: 2rem 3rem; max-width: 1080px; margin: 0 auto; width: 100%; }
+    #context-rail { width: 280px; padding: 1.75rem 1.25rem; border-left: 1px solid var(--border); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+
+    header.top-bar { background: var(--surface); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; flex-shrink: 0; z-index: 30; }
+    .search-wrapper { position: relative; width: 440px; }
+    .search-input { width: 100%; padding: 0.5rem 2.2rem 0.5rem 2.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-main); font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(69, 104, 232, 0.2); }
+    .search-kbd { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; padding: 0.15rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono); }
+    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-muted); fill: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); transition: all 0.15s; }
+    .btn:hover { background: var(--bg-primary); }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-ghost { background: transparent; border-color: transparent; }
+
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .view-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); scroll-margin-top: 1.5rem; }
+    .q-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-diff-beginner { background: var(--success-bg); color: var(--success-text); }
+    .tag-diff-intermediate { background: var(--warning-bg); color: var(--warning-text); }
+    .tag-diff-advanced { background: var(--danger-bg); color: var(--danger-text); }
+    .tag-topic { background: var(--bg-primary); color: var(--text-muted); border: 1px solid var(--border); }
+    
+    .q-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.35; }
+    .q-section-heading { font-size: 0.88rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .callout-box { background: var(--bg-primary); border-left: 4px solid var(--primary); padding: 1.1rem 1.3rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 0.75rem 0 1.25rem; font-size: 0.95rem; }
+    .callout-box p { margin-bottom: 0.5rem; }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .code-container { background: var(--code-bg); border-radius: var(--radius); margin: 1.1rem 0; overflow: hidden; border: 1px solid #1E293B; }
+    .code-header { background: #1E293B; padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: #94A3B8; }
+    pre { padding: 1rem 1.2rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.86rem; color: var(--code-text); line-height: 1.55; }
+
+    .table-container { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left; }
+    th { background: var(--bg-primary); padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .mobile-menu-btn { display: none; }
+    @media (max-width: 1024px) {
+      #context-rail { display: none; }
+      #content-stage { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-menu-btn { display: inline-flex; }
+      .search-wrapper { width: 180px; }
+      #content-stage { padding: 1rem; }
+    }
+
+    @media print {
+      body { height: auto; overflow: visible; background: #FFF; color: #000; }
+      #sidebar, header.top-bar, #context-rail, .interactive-toolbar, .btn-action-group { display: none !important; }
+      #main-container, #content-area, #content-stage { overflow: visible !important; width: 100% !important; padding: 0 !important; }
+      .view-card { border: none !important; box-shadow: none !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Prep</span>
+      </div>
+      <button class="btn btn-ghost" id="sidebar-close-btn" style="color:#FFF; display:none;">✕</button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>Section B Completion</span>
+        <span id="section-progress-label">0/35 (0%)</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="section-progress-bar" style="width:0%; height:100%; background:var(--primary); transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Jump to Question</div>
+      <!-- Injected via JS -->
+    </nav>
+  </aside>
+
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="global-search-input" class="search-input" placeholder="Search FastAPI, Flask, REST APIs..." autocomplete="off">
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="revision-mode-toggle" title="Show High Priority Questions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Revision Filter</span>
+        </button>
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn" onclick="window.print()" title="Print Section">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="content-area">
+      <div id="content-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">Section B: FastAPI, Flask & REST APIs</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Exhaustive, interview-ready guide covering all 35 API architectural questions for 5-YOE Full Stack Developers. Details ASGI concurrency, Pydantic v2 validation, threadpool delegation, JWT auth, idempotency, rate limiting, and end-to-end CRUD design.</p>
+        </div>
+
+        <div class="interactive-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <select id="filter-difficulty" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Difficulties</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select id="filter-status" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Questions</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+              <option value="bookmarked">Bookmarked</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);" id="results-count-text">Showing 35 of 35 questions</div>
+        </div>
+
+        <div id="questions-render-target"></div>
+      </div>
+
+      <aside id="context-rail">
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.75rem;">
+          Table of Contents
+        </div>
+        <div id="rail-topic-outline" style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.83rem;"></div>
+
+        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;">
+            5-YOE Senior Insight
+          </div>
+          <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">
+            In API design interviews, emphasize the difference between transport mechanisms and business logic. Be prepared to explain why mixing synchronous database drivers inside <code>async def</code> destroys throughput, and detail production-level API hygiene: idempotency keys, cursor pagination, and structured error envelopes.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const API_QUESTIONS = [
+      {
+        id: "api-01",
+        num: 1,
+        title: "FastAPI versus Flask: Architecture and Concurrency Models",
+        diff: "intermediate",
+        priority: true,
+        spoken: "FastAPI is built natively on ASGI using Starlette and Pydantic v2, featuring native asynchronous concurrency, automated OpenAPI documentation, and schema validation. Flask is a mature WSGI microframework that operates on a synchronous thread-per-request model, relying on third-party extensions like Marshmallow or Flask-RESTful. FastAPI provides significantly higher throughput on concurrent I/O-bound workloads, whereas Flask is simpler for traditional server-rendered templates or straightforward synchronous microservices.",
+        explanation: "WSGI (Web Server Gateway Interface) is strictly synchronous; a worker thread handles one request from start to finish and blocks during I/O. ASGI (Asynchronous Server Gateway Interface) decouples request handling using an event loop, allowing a single worker process to interleave thousands of waiting network or database sockets concurrently.",
+        table: {
+          headers: ["Attribute", "FastAPI", "Flask"],
+          rows: [
+            ["Interface Standard", "ASGI (Asynchronous Server Gateway Interface)", "WSGI (Web Server Gateway Interface)"],
+            ["Concurrency Model", "Single-threaded event loop (async/await) + threadpool", "Preemptive thread-per-request / synchronous process workers"],
+            ["Data Validation", "Built-in via Pydantic v2 (Rust-backed parsing)", "Manual or external extensions (Marshmallow / WTForms)"],
+            ["API Documentation", "Automated OpenAPI (Swagger UI & ReDoc)", "Requires manual setup or extensions (Flasgger)"],
+            ["Type Hint Integration", "First-class; drives routing, validation, and docs", "Type hints supported syntactically, but unused by core engine"]
+          ]
+        },
+        followUps: [
+          { q: "Is FastAPI always faster than Flask in every scenario?", a: "No. For CPU-bound workloads or when both frameworks call synchronous, blocking databases via threadpools, the performance difference is negligible. The gap appears primarily in high-concurrency I/O-bound workflows using async drivers." }
+        ]
+      },
+      {
+        id: "api-02",
+        num: 2,
+        title: "ASGI and Asynchronous APIs: How the Event Loop Handles Requests",
+        diff: "intermediate",
+        priority: true,
+        spoken: "ASGI defines an asynchronous interface between Python web servers (like Uvicorn) and applications. It passes three arguments: 'scope' containing request metadata, 'receive' an async callable yielding incoming payload chunks, and 'send' an async callable transmitting response headers and body bytes. When an endpoint performs an awaited I/O operation, control yields back to the asyncio event loop, allowing other incoming connections to make progress on the same thread.",
+        explanation: "Unlike WSGI's `environ` and `start_response` pattern which blocks OS threads, ASGI treats requests as streams of async messages. This enables bidirectional protocols such as WebSockets, Server-Sent Events (SSE), and long-polling HTTP streams within the same application process.",
+        code: `# Under the hood ASGI interface implementation:
+async def simple_asgi_app(scope, receive, send):
+    assert scope['type'] == 'http'
+    await send({
+        'type': 'http.response.start',
+        'status': 200,
+        'headers': [[b'content-type', b'application/json']]
+    })
+    await send({
+        'type': 'http.response.body',
+        'body': b'{"status": "healthy"}',
+        'more_body': False
+    })`,
+        followUps: [
+          { q: "Why can't WSGI natively handle WebSockets?", a: "WSGI assumes a single synchronous request-response cycle where the thread closes the connection after returning, making persistent, bidirectional asynchronous frame streaming impossible without non-standard server hacks." }
+        ]
+      },
+      {
+        id: "api-03",
+        num: 3,
+        title: "Path Parameters, Query Parameters, Request Bodies, and Dependency Injection",
+        diff: "beginner",
+        priority: false,
+        spoken: "In FastAPI, route signatures declare inputs explicitly: parameters matching URL path segments are parsed as Path parameters; basic typed parameters not in the path are parsed as Query parameters; and Pydantic model arguments are automatically extracted from the JSON Request Body. FastAPI's Depends() mechanism implements dependency injection, allowing shared components—such as database sessions, authentication context, or pagination params—to be resolved and injected hierarchically.",
+        code: `from fastapi import FastAPI, Path, Query, Depends
+from pydantic import BaseModel, Field
+
+app = FastAPI()
+
+class TicketUpdate(BaseModel):
+    title: str = Field(..., min_length=3)
+    priority: str = Field(default="MEDIUM")
+
+async def common_auth_user(token: str = Query(...)):
+    # Resolves user context from query or headers
+    return {"user_id": "usr_441", "role": "admin"}
+
+@app.patch("/api/v1/tickets/{ticket_id}")
+async def update_ticket(
+    ticket_id: int = Path(..., ge=1, description="Primary ID of ticket"),
+    notify: bool = Query(default=True, description="Send Slack notification"),
+    payload: TicketUpdate = None,
+    current_user: dict = Depends(common_auth_user)
+):
+    return {"ticket_id": ticket_id, "updated_by": current_user["user_id"], "notify": notify}`
+      },
+      {
+        id: "api-04",
+        num: 4,
+        title: "Pydantic Validation and Response Serialization in FastAPI",
+        diff: "intermediate",
+        priority: true,
+        spoken: "FastAPI uses Pydantic models to validate incoming requests and serialize outgoing responses. When a request arrives, Pydantic parses raw JSON types into validated Python structures. For outgoing responses, declaring 'response_model' ensures data filtering: private fields (such as hashed passwords) are stripped automatically, data types are coerced to JSON primitives, and the response contract is documented in OpenAPI schemas.",
+        code: `from pydantic import BaseModel, EmailStr, ConfigDict
+from fastapi import FastAPI, status
+
+app = FastAPI()
+
+class UserIn(BaseModel):
+    email: EmailStr
+    raw_password: str
+
+class UserOut(BaseModel):
+    id: str
+    email: EmailStr
+    is_active: bool
+    model_config = ConfigDict(from_attributes=True) # Reads ORM/BSON attributes
+
+@app.post("/users", response_model=UserOut, status_code=status.HTTP_201_CREATED)
+async def create_user(user_in: UserIn):
+    # 'raw_password' is automatically excluded from the final serialized JSON
+    return {"id": "usr_101", "email": user_in.email, "is_active": True, "raw_password": "secret"}`
+      },
+      {
+        id: "api-05",
+        num: 5,
+        title: "async def versus def in FastAPI and the Threat of Event-Loop Blocking",
+        diff: "advanced",
+        priority: true,
+        spoken: "Declaring a path operation as 'async def' tells FastAPI to run it directly on the main thread's asyncio event loop. If that function calls synchronous blocking code—such as time.sleep(), synchronous database drivers like psycopg2 or pymongo, or CPU-intensive image resizing—it freezes the entire event loop, preventing all concurrent connections from processing. Declaring an endpoint with standard 'def' instructs FastAPI to automatically offload it to Starlette's worker threadpool, preserving responsiveness.",
+        code: `import time
+from fastapi import FastAPI
+
+app = FastAPI()
+
+# DISASTROUS IN PRODUCTION: Freezes all requests globally for 5 seconds
+@app.get("/bad-async")
+async def bad_blocking_route():
+    time.sleep(5) # Blocks the entire event loop thread!
+    return {"status": "ruined"}
+
+# SAFE: FastAPI runs synchronous def in external anyio worker threadpool
+@app.get("/safe-sync")
+def safe_blocking_route():
+    time.sleep(5) # Other async endpoints continue serving
+    return {"status": "ok"}`,
+        followUps: [
+          { q: "What should you do if an async function must call a blocking library?", a: "Wrap the synchronous call using `anyio.to_thread.run_sync()` or `asyncio.to_thread()` to delegate it to the background threadpool." }
+        ]
+      },
+      {
+        id: "api-06",
+        num: 6,
+        title: "FastAPI Dependencies and Database-Session Handling",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Database sessions should always be scoped to the lifespan of an HTTP request. We implement a dependency with a generator function using 'yield'. When the request arrives, the dependency executes up to the yield statement to provide the session. Once the endpoint completes—or raises an unhandled exception—the code after yield runs inside a finally block, guaranteeing the session is closed, returned to the connection pool, or rolled back.",
+        code: `from typing import AsyncGenerator
+from fastapi import FastAPI, Depends
+
+async def get_db_session() -> AsyncGenerator:
+    session = await AsyncSessionFactory()
+    try:
+        yield session
+        await session.commit()
+    except Exception:
+        await session.rollback()
+        raise
+    finally:
+        await session.close() # Always releases connection back to pool
+
+@app.get("/items")
+async def list_items(db = Depends(get_db_session)):
+    return await db.execute_query("SELECT 1")`
+      },
+      {
+        id: "api-07",
+        num: 7,
+        title: "Middleware and Request/Response Execution Order in FastAPI",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Middleware wraps every HTTP request in an application. Code before 'call_next(request)' executes before the route handler, and code after 'call_next' executes on the outgoing response. When multiple middlewares are registered, they execute like nested Russian dolls: the first middleware registered runs first on incoming requests and last on outgoing responses.",
+        code: `import time
+import uuid
+from fastapi import FastAPI, Request
+
+app = FastAPI()
+
+@app.middleware("http")
+async def request_lifecycle_middleware(request: Request, call_next):
+    correlation_id = request.headers.get("X-Correlation-ID", str(uuid.uuid4()))
+    request.state.correlation_id = correlation_id
+    
+    start_time = time.perf_counter()
+    response = await call_next(request)
+    duration = time.perf_counter() - start_time
+    
+    response.headers["X-Correlation-ID"] = correlation_id
+    response.headers["X-Response-Time"] = f"{duration:.4f}s"
+    return response`
+      },
+      {
+        id: "api-08",
+        num: 8,
+        title: "OAuth2, JWT, and External Identity-Provider Authentication",
+        diff: "advanced",
+        priority: true,
+        spoken: "Stateless API authentication typically uses OAuth2 with the Bearer JWT pattern. The client authenticates against a login endpoint or external Identity Provider (Okta, Auth0, AWS Cognito) and receives a signed JSON Web Token containing claims like user ID, roles, and expiration. For every request, a FastAPI Security dependency extracts the token from the Authorization header, validates the cryptographic signature using the public key or shared secret, checks expiration, and injects the authenticated User domain object.",
+        code: `from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+import jwt
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/token")
+SECRET_KEY = "prod-secret-signing-key"
+ALGORITHM = "HS256"
+
+async def get_current_user(token: str = Depends(oauth2_scheme)):
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+        return {"user_id": user_id, "role": payload.get("role", "user")}
+    except jwt.PyJWTError:
+        raise credentials_exception`
+      },
+      {
+        id: "api-09",
+        num: 9,
+        title: "Role-Based Access Control (RBAC) in FastAPI",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Role-Based Access Control is cleanly implemented in FastAPI using parameterized callable class dependencies. We define a dependency factory class that accepts required roles or permissions. The instance checks the resolved current_user's permissions and raises a 403 Forbidden HTTP exception if the user does not possess the required privileges.",
+        code: `class RoleChecker:
+    def __init__(self, allowed_roles: list[str]):
+        self.allowed_roles = allowed_roles
+
+    def __call__(self, current_user: dict = Depends(get_current_user)):
+        if current_user.get("role") not in self.allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions to access this resource"
+            )
+        return current_user
+
+# Enforce route-level RBAC:
+@app.delete("/api/v1/users/{id}", dependencies=[Depends(RoleChecker(["ADMIN", "SUPERADMIN"]))])
+async def delete_user(id: str):
+    return {"status": "deleted"}`
+      },
+      {
+        id: "api-10",
+        num: 10,
+        title: "Centralized Validation and Exception Handling",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Rather than handling exceptions with try/except blocks inside every route, production APIs use global exception handlers. We register custom handlers using `@app.exception_handler` to intercept domain exceptions (like EntityNotFoundError or BusinessRuleViolation) and Pydantic's `RequestValidationError`, formatting them into a unified, predictable JSON error envelope across the entire API.",
+        code: `from fastapi import Request, status
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+
+class DomainError(Exception):
+    def __init__(self, message: str, code: str):
+        self.message = message
+        self.code = code
+
+@app.exception_handler(DomainError)
+async def domain_exception_handler(request: Request, exc: DomainError):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"error": {"code": exc.code, "message": exc.message, "path": request.url.path}}
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"error": {"code": "VALIDATION_FAILED", "details": exc.errors()}}
+    )`
+      },
+      {
+        id: "api-11",
+        num: 11,
+        title: "Reusable Pagination, Filtering, Sorting, and Search",
+        diff: "intermediate",
+        priority: true,
+        spoken: "We avoid duplicating pagination and query filtering logic across endpoints by bundling query parameters into a shared reusable Pydantic dependency. Using `Depends()`, this dependency automatically parses limit, offset or cursor, sort fields, and search keywords, applying bounds to prevent memory denial-of-service.",
+        code: `from dataclasses import dataclass
+from fastapi import Query
+
+@dataclass
+class PaginationParams:
+    page: int = Query(1, ge=1, description="Page number")
+    limit: int = Query(20, ge=1, le=100, description="Items per page (max 100)")
+    sort_by: str = Query("created_at", description="Field to sort by")
+    order: str = Query("desc", regex="^(asc|desc)$")
+    q: str | None = Query(None, description="Free text search query")
+
+    @property
+    def skip(self) -> int:
+        return (self.page - 1) * self.limit
+
+@app.get("/api/v1/tickets")
+async def list_tickets(params: PaginationParams = Depends()):
+    return {"skip": params.skip, "limit": params.limit, "sort": f"{params.sort_by}:{params.order}"}`
+      },
+      {
+        id: "api-12",
+        num: 12,
+        title: "Application Startup/Shutdown and Shared Resources (Lifespan Context)",
+        diff: "intermediate",
+        priority: true,
+        spoken: "FastAPI handles application lifecycle management using async context managers via the 'lifespan' parameter, which replaces the deprecated '@app.on_event' handlers. Code before the 'yield' executes during startup to establish heavy shared resources—such as database connection pools, Redis clients, and HTTPX connection pools. Code after the 'yield' executes during graceful shutdown to drain active connections safely.",
+        code: `from contextlib import asynccontextmanager
+from fastapi import FastAPI
+import httpx
+
+shared_state = {}
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Initialize shared connection pools
+    shared_state["http_client"] = httpx.AsyncClient(timeout=10.0)
+    print("[LIFESPAN] Resource pools allocated")
+    yield
+    # Shutdown: Gracefully drain connections
+    await shared_state["http_client"].aclose()
+    print("[LIFESPAN] Connection pools drained cleanly")
+
+app = FastAPI(lifespan=lifespan)`
+      },
+      {
+        id: "api-13",
+        num: 13,
+        title: "Secure CORS Configuration",
+        diff: "beginner",
+        priority: true,
+        spoken: "Cross-Origin Resource Sharing (CORS) is a browser security mechanism that restricts web applications from making cross-origin HTTP requests. In FastAPI, we use CORSMiddleware. In production, we never use 'allow_origins=[\"*\"]' with 'allow_credentials=True', as browsers strictly forbid this combination for security. Instead, we specify an explicit whitelist of allowed trusted origins from environment variables.",
+        code: `from fastapi.middleware.cors import CORSMiddleware
+
+ALLOWED_ORIGINS = ["https://dashboard.production.com", "https://admin.production.com"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Correlation-ID"],
+    max_age=600 # Cache preflight OPTIONS responses for 10 minutes
+)`
+      },
+      {
+        id: "api-14",
+        num: 14,
+        title: "Testing FastAPI with Pytest and Dependency Overrides",
+        diff: "intermediate",
+        priority: true,
+        spoken: "FastAPI applications are tested using `httpx.AsyncClient` or `starlette.testclient.TestClient`. The cleanest architectural pattern for unit and integration testing is FastAPI's `app.dependency_overrides` dictionary, which allows replacing real production database sessions, authentication checks, or third-party API clients with test fixtures without needing monkeypatching.",
+        code: `import pytest
+from httpx import AsyncClient, ASGITransport
+from main import app, get_current_user
+
+# Dependency override fixture
+async def override_get_current_user():
+    return {"user_id": "test_user_1", "role": "ADMIN"}
+
+@pytest.fixture(autouse=True)
+def run_around_tests():
+    app.dependency_overrides[get_current_user] = override_get_current_user
+    yield
+    app.dependency_overrides.clear()
+
+@pytest.mark.asyncio
+async def test_get_secure_endpoint():
+    transport = ASGITransport(app=app)
+    async with AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.get("/api/v1/protected-data")
+        assert response.status_code == 200`
+      },
+      {
+        id: "api-15",
+        num: 15,
+        title: "OpenAPI Documentation Customization in FastAPI",
+        diff: "beginner",
+        priority: false,
+        spoken: "FastAPI generates OpenAPI 3.1 specifications automatically from Pydantic models, docstrings, type annotations, and route metadata. We can customize the interactive Swagger UI and ReDoc by configuring tags, descriptions, contact info, security schemes, and summary flags directly on route decorators.",
+        code: `app = FastAPI(
+    title="Customer Support Microservice",
+    version="1.4.0",
+    docs_url="/docs",
+    redoc_url="/redoc"
+)
+
+@app.post("/tickets", tags=["Tickets"], summary="Create new support ticket", response_description="The created ticket record")
+async def create_ticket():
+    """Detailed endpoint docstring displayed directly in Swagger UI."""
+    return {}`
+      },
+      {
+        id: "api-16",
+        num: 16,
+        title: "Database Transactions and Rollback Management in APIs",
+        diff: "advanced",
+        priority: true,
+        spoken: "To maintain ACID guarantees across multi-step mutations, API endpoints must group operations inside explicit database transactions. If any database write fails or business validation fails mid-flow, an automatic rollback must execute to prevent orphaned records. We implement this cleanly by wrapping transaction commits and rollbacks in session context managers or route dependencies.",
+        code: `async def transfer_balance(sender_id: str, receiver_id: str, amount: float, session):
+    async with session.begin(): # Starts explicit transaction block
+        sender = await session.get_for_update(sender_id)
+        if sender.balance < amount:
+            raise HTTPException(status_code=400, detail="Insufficient funds")
+        
+        await session.execute("UPDATE accounts SET balance = balance - :amt WHERE id = :id", {"amt": amount, "id": sender_id})
+        await session.execute("UPDATE accounts SET balance = balance + :amt WHERE id = :id", {"amt": amount, "id": receiver_id})
+        # If any exception is raised, session.begin() automatically issues ROLLBACK`
+      },
+      {
+        id: "api-17",
+        num: 17,
+        title: "Risks of Blocking Database Drivers in Asynchronous Endpoints",
+        diff: "advanced",
+        priority: true,
+        spoken: "Using synchronous, blocking database drivers (such as pymongo, psycopg2, or synchronous SQLAlchemy) inside `async def` endpoints completely destroys application throughput. The single event loop thread stops and waits for socket reads from the database server, dropping throughput from thousands of requests per second to single digits under load.",
+        explanation: "Always use native async drivers: Motor for MongoDB, asyncpg for PostgreSQL, or aiomysql. If legacy constraints force the use of a synchronous driver, the endpoint MUST be declared with plain `def` so FastAPI delegates it to the threadpool.",
+        followUps: [
+          { q: "What metric exposes this issue in production monitoring?", a: "CPU utilization remains low while request latency and queue depth spike dramatically." }
+        ]
+      },
+      {
+        id: "api-18",
+        num: 18,
+        title: "Flask Application Context versus Request Context",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Flask relies on two thread-local context abstractions managed by Werkzeug. The Request Context manages request-specific variables (`request` and `session`) bound to an incoming HTTP connection. The Application Context manages application-level state (`current_app` and `g`) without requiring the developer to pass the `app` instance across modules. When a request arrives, Flask automatically pushes both contexts.",
+        table: {
+          headers: ["Context Type", "Globals Provided", "Lifespan", "Common Use Cases"],
+          rows: [
+            ["Request Context", "request, session", "Duration of an individual HTTP request", "Parsing form data, headers, cookies, client IPs"],
+            ["Application Context", "current_app, g", "Request lifespan, or during CLI scripts/tests", "Storing database connection handles on g, reading config"]
+          ]
+        },
+        code: `from flask import Flask, g, request
+
+app = Flask(__name__)
+
+@app.before_request
+def setup_db():
+    # Stored on application context global 'g' for this thread/request
+    g.db_connection = "db_handle_101"
+
+@app.route("/user")
+def get_user():
+    user_id = request.args.get("id") # Request context
+    return f"User {user_id} using {g.db_connection}"`
+      },
+      {
+        id: "api-19",
+        num: 19,
+        title: "Flask Blueprints and Application Structure",
+        diff: "beginner",
+        priority: false,
+        spoken: "Flask Blueprints provide modular organization for large applications. A Blueprint records routes, template folders, and static paths in isolation without requiring an immediate Flask app instance. In the main entrypoint, blueprints are registered onto the application factory with specific URL prefixes (e.g. `/api/v1/auth`, `/api/v1/tickets`).",
+        code: `# auth_routes.py
+from flask import Blueprint
+
+auth_bp = Blueprint("auth", __name__, url_prefix="/api/v1/auth")
+
+@auth_bp.route("/login", methods=["POST"])
+def login():
+    return {"token": "jwt_token_sample"}
+
+# app.py
+from flask import Flask
+app = Flask(__name__)
+app.register_blueprint(auth_bp)`
+      },
+      {
+        id: "api-20",
+        num: 20,
+        title: "Flask Extensions and Application Factories",
+        diff: "intermediate",
+        priority: false,
+        spoken: "The Application Factory pattern implements a `create_app()` function that initializes and configures the Flask application. This prevents circular imports, isolates configuration across test and production environments, and allows running multiple app instances in the same process. Flask extensions are instantiated globally without arguments and bound to the application inside the factory using their `init_app(app)` method.",
+        code: `from flask import Flask
+from flask_cors import CORS
+
+cors = CORS() # Global instantiation without concrete app
+
+def create_app(config_name="production"):
+    app = Flask(__name__)
+    app.config.from_object(f"config.{config_name.capitalize()}Config")
+    
+    # Deferred extension initialization
+    cors.init_app(app)
+    
+    return app`
+      },
+      {
+        id: "api-21",
+        num: 21,
+        title: "Flask Error Handling, Configuration, and Authentication",
+        diff: "intermediate",
+        priority: false,
+        spoken: "In Flask, centralized error handling uses `@app.errorhandler()` decorators to return uniform JSON payloads for HTTP errors. Configuration is loaded via `app.config.from_prefixed_env()` or class objects. Authentication typically uses decorators like `@login_required` or `@jwt_required` (via Flask-JWT-Extended) that inspect the incoming request headers before executing the view.",
+        code: `from functools import wraps
+from flask import request, jsonify
+
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get("Authorization")
+        if not token or not token.startswith("Bearer "):
+            return jsonify({"error": "Missing or invalid token"}), 401
+        return f(*args, **kwargs)
+    return decorated`
+      },
+      {
+        id: "api-22",
+        num: 22,
+        title: "Evaluating Whether to Migrate Flask to FastAPI",
+        diff: "advanced",
+        priority: true,
+        spoken: "Migrating from Flask to FastAPI should be driven by technical requirements, not hype. Migration is justified when: 1) High-concurrency I/O or streaming workloads require non-blocking async capabilities, 2) The team spends excessive effort maintaining third-party validation and OpenAPI libraries, or 3) Microservices need strict Pydantic contract validation. Migration is NOT justified for mature, low-concurrency synchronous apps, apps heavily reliant on Jinja templates, or teams lacking experience with asyncio debugging.",
+        table: {
+          headers: ["Decision Factor", "Stay on Flask", "Migrate to FastAPI"],
+          rows: [
+            ["Concurrency Need", "Standard synchronous operations (< 100 req/s)", "High concurrent I/O, WebSockets, SSE (> 1000 req/s)"],
+            ["API Documentation", "Internal tooling / UI where docs are secondary", "Public or multi-team APIs requiring strict OpenAPI specs"],
+            ["Ecosystem Maturity", "Massive 16-year ecosystem of legacy plugins", "Modern async-first asyncpg, Pydantic, Starlette ecosystem"]
+          ]
+        }
+      },
+      {
+        id: "api-23",
+        num: 23,
+        title: "PUT versus PATCH Semantics and Practical API Design",
+        diff: "beginner",
+        priority: true,
+        spoken: "PUT represents a full replacement of the target resource; the client sends the entire representation, and any missing fields should be set to null or their default values. PATCH represents a partial modification; only the fields sent in the request body are updated, leaving unmentioned fields untouched. Both are designed to update resources, but PUT is idempotent while PATCH can be non-idempotent depending on the operations requested.",
+        code: `# Pydantic model for PATCH (all fields optional)
+class TicketPatch(BaseModel):
+    title: str | None = None
+    priority: str | None = None
+
+# Using model_dump(exclude_unset=True) ensures only fields 
+# explicitly provided by client are updated in DB:
+update_data = patch_payload.model_dump(exclude_unset=True)
+await db.tickets.update_one({"_id": ticket_id}, {"$set": update_data})`
+      },
+      {
+        id: "api-24",
+        num: 24,
+        title: "POST, GET, PUT, and DELETE Semantics and Idempotency",
+        diff: "intermediate",
+        priority: true,
+        spoken: "An HTTP method is 'safe' if it does not alter server state (GET, HEAD, OPTIONS). An HTTP method is 'idempotent' if executing it multiple times produces the identical server state as executing it once. GET, PUT, and DELETE are idempotent. POST is neither safe nor idempotent because repeating a POST creates multiple duplicate resources.",
+        table: {
+          headers: ["HTTP Method", "Safe (Read-Only)", "Idempotent", "Standard Success Codes"],
+          rows: [
+            ["GET", "Yes", "Yes", "200 OK"],
+            ["POST", "No", "No", "201 Created, 202 Accepted"],
+            ["PUT", "No", "Yes", "200 OK, 204 No Content"],
+            ["PATCH", "No", "No (Usually)", "200 OK, 204 No Content"],
+            ["DELETE", "No", "Yes", "200 OK, 204 No Content"]
+          ]
+        }
+      },
+      {
+        id: "api-25",
+        num: 25,
+        title: "Appropriate HTTP Status Codes for Production APIs",
+        diff: "beginner",
+        priority: true,
+        spoken: "A 5-YOE engineer should avoid using generic 200s or 500s. We return 201 Created for resource generation, 202 Accepted for asynchronous background jobs, 204 No Content for successful deletions, 400 Bad Request for business rule violations, 401 Unauthorized for missing/invalid credentials, 403 Forbidden for authenticated users lacking permissions, 404 Not Found for missing entities, 409 Conflict for duplicate uniqueness constraints, 422 Unprocessable Entity for schema validation failures, and 429 Too Many Requests for rate limiting.",
+        followUps: [
+          { q: "What is the difference between 401 Unauthorized and 403 Forbidden?", a: "401 means 'You are not authenticated (who are you?)'; 403 means 'You are authenticated, but not permitted to access this resource'." }
+        ]
+      },
+      {
+        id: "api-26",
+        num: 26,
+        title: "API Versioning Strategies and Evolution",
+        diff: "intermediate",
+        priority: false,
+        spoken: "The three primary API versioning strategies are: URI Path versioning (`/api/v1/tickets`), Custom Header versioning (`X-API-Version: 1.0`), and Content Negotiation via Accept headers (`Accept: application/vnd.app.v1+json`). In production REST APIs, URI Path versioning is the industry standard due to its simplicity, ease of caching, and transparent routing in API Gateways.",
+        followUps: [
+          { q: "How do you deprecate an old API version smoothly?", a: "Return standard RFC 8594 `Sunset` and `Deprecation` HTTP headers, monitor access logs to identify lagging clients, and issue communications before final decommissioning." }
+        ]
+      },
+      {
+        id: "api-27",
+        num: 27,
+        title: "Consistent API Error Structures and RFC 7807 (Problem Details)",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Production APIs should never return inconsistent or raw stack traces. We adhere to RFC 7807 Problem Details or use a standard envelope with fields: 'code' (machine-readable identifier), 'message' (human-readable string), 'details' (field-specific errors), and 'correlation_id' (to match client logs with backend distributed tracing).",
+        code: `{
+  "error": {
+    "code": "ENTITY_NOT_FOUND",
+    "message": "Ticket with ID 'tick_9941' does not exist.",
+    "correlation_id": "c8a141-89be-4f11",
+    "timestamp": "2026-10-29T14:30:00Z"
+  }
+}`
+      },
+      {
+        id: "api-28",
+        num: 28,
+        title: "Rate Limiting and API-Abuse Protection",
+        diff: "advanced",
+        priority: true,
+        spoken: "Rate limiting protects APIs from brute-force attacks, DDoS, and runaway client loops. In distributed architectures, we implement rate limiting at the API Gateway or using Redis via the Sliding Window Counter or Token Bucket algorithms. The API tracks requests keyed by user ID or client IP, returning a 429 Too Many Requests status along with standard `RateLimit-Limit`, `RateLimit-Remaining`, and `Retry-After` headers.",
+        code: `# Redis sliding window log pseudo-implementation:
+async def is_rate_limited(user_id: str, redis_client, max_requests=100, window_seconds=60) -> bool:
+    current_time = time.time()
+    key = f"rate_limit:{user_id}"
+    
+    pipe = redis_client.pipeline()
+    pipe.zremrangebyscore(key, 0, current_time - window_seconds) # Remove old entries
+    pipe.zadd(key, {str(current_time): current_time})
+    pipe.zcard(key)
+    pipe.expire(key, window_seconds)
+    _, _, request_count, _ = await pipe.execute()
+    
+    return request_count > max_requests`
+      },
+      {
+        id: "api-29",
+        num: 29,
+        title: "API Security: Injection and Broken Object-Level Authorization (BOLA)",
+        diff: "advanced",
+        priority: true,
+        spoken: "BOLA (OWASP API #1) occurs when an endpoint accepts a resource ID from user input and retrieves it without verifying if the requesting user owns that resource. To prevent this, every query must include the tenant or user context resolved from the verified JWT. For SQL/NoSQL injection, we never concatenate raw strings into queries; we use parameterized queries, ORMs, or Pydantic schemas.",
+        code: `# VULNERABLE TO BOLA:
+@app.get("/tickets/{ticket_id}")
+async def get_ticket_insecure(ticket_id: str):
+    return await db.tickets.find_one({"_id": ticket_id})
+
+# SECURE: Scoped to authenticated user/organization
+@app.get("/tickets/{ticket_id}")
+async def get_ticket_secure(ticket_id: str, user = Depends(get_current_user)):
+    ticket = await db.tickets.find_one({"_id": ticket_id, "organization_id": user["org_id"]})
+    if not ticket:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    return ticket`
+      },
+      {
+        id: "api-30",
+        num: 30,
+        title: "Idempotency Keys in Distributed Payment and Mutation Endpoints",
+        diff: "advanced",
+        priority: true,
+        spoken: "An idempotency key is a unique token (typically a UUID) generated by the client and sent in an HTTP header (e.g. `Idempotency-Key`). When the server receives a mutation request, it uses a distributed store (Redis) to check if that key exists. If it is already processing or completed, the server skips re-executing the operation and returns the cached response, preventing duplicate charges or records caused by network retries.",
+        explanation: "This pattern uses an atomic Redis SET with NX (not exists) and an expiration time. If the key is successfully set, the server processes the request and updates the key with the final response. If the key already exists, the server waits or immediately returns the stored result.",
+        followUps: [
+          { q: "What status code should you return if a duplicate request arrives while the original is still processing?", a: "HTTP 409 Conflict with an error code like 'REQUEST_IN_PROGRESS'." }
+        ]
+      },
+      {
+        id: "api-31",
+        num: 31,
+        title: "Cursor-Based Pagination versus Offset-Based Pagination",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Offset-based pagination (`OFFSET 10000 LIMIT 20`) forces the database to scan and discard 10,000 index entries, resulting in O(n) performance degradation and skipped/duplicated records when items are inserted concurrently. Cursor-based pagination uses an indexed reference point (such as `created_at` or `_id`) to fetch the next slice using a direct range query (`WHERE _id < cursor LIMIT 20`), providing consistent O(1) performance and stable results.",
+        table: {
+          headers: ["Attribute", "Offset Pagination", "Cursor-Based (Keyset) Pagination"],
+          rows: [
+            ["Large Offset Query Performance", "Slow (Scans and discards preceding rows)", "Fast (Indexed direct lookup)"],
+            ["Stability on Ingestion", "Rows drift / duplicates occur on concurrent inserts", "Stable; anchor cursor avoids skipped items"],
+            ["Direct Page Jumping", "Yes (Can jump directly to page 50)", "No (Sequential navigation only: next/prev)"],
+            ["Best Use Case", "Admin dashboards with low data volumes", "High-volume feeds, infinite scrolling, real-time data"]
+          ]
+        }
+      },
+      {
+        id: "api-32",
+        num: 32,
+        title: "Distributed Request Tracing and Correlation IDs",
+        diff: "intermediate",
+        priority: false,
+        spoken: "In a microservices architecture, a single user action may traverse an API Gateway, multiple FastAPI services, message queues, and databases. We generate a unique Correlation ID (`X-Correlation-ID`) at the gateway or entrypoint middleware and pass it along downstream HTTP headers and queue messages. We include this ID in every structured log line and tracing span (OpenTelemetry), allowing engineers to trace an entire request flow across all systems in Datadog or AWS CloudWatch.",
+        followUps: [
+          { q: "What standard defines distributed tracing headers?", a: "The W3C Trace Context standard defines the `traceparent` and `tracestate` headers." }
+        ]
+      },
+      {
+        id: "api-33",
+        num: 33,
+        title: "Timeouts, Retries, and Circuit Breakers in Downstream API Calls",
+        diff: "advanced",
+        priority: true,
+        spoken: "When calling external APIs, never rely on default timeouts, as hanging sockets can cause thread exhaustion. We configure strict connection and read timeouts (e.g. 2s connect, 5s read) using HTTPX. For retries, we retry only on transient 5xx errors or connection timeouts using exponential backoff with jitter. To protect our services from cascading failures when a downstream dependency is down, we use a circuit breaker to quickly fail calls and serve fallbacks.",
+        code: `import httpx
+from tenacity import retry, stop_after_attempt, wait_exponential
+
+# Resilient downstream caller with strict timeouts and exponential backoff
+client = httpx.AsyncClient(timeout=httpx.Timeout(5.0, connect=2.0))
+
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=0.5, min=1, max=4))
+async def call_payment_gateway(payload: dict):
+    response = await client.post("https://payments.internal/charge", json=payload)
+    response.raise_for_status()
+    return response.json()`
+      },
+      {
+        id: "api-34",
+        num: 34,
+        title: "Authentication versus Authorization: Architectural Boundaries",
+        diff: "beginner",
+        priority: true,
+        spoken: "Authentication verifies identity: 'Who are you?' (e.g. verifying credentials, checking passwords, validating JWT signatures). Authorization verifies permissions: 'What are you allowed to do?' (e.g. verifying if the authenticated user has permission to delete ticket #491). In web architectures, authentication is resolved first at the edge or gateway, while authorization is enforced at the service and domain layer.",
+        followUps: [
+          { q: "Can a user be successfully authenticated but fail authorization?", a: "Yes. An employee who logs in successfully with valid credentials is authenticated, but will be denied authorization (403 Forbidden) if they try to access executive salary data." }
+        ]
+      },
+      {
+        id: "api-35",
+        num: 35,
+        title: "End-to-End Design: Production Ticket Management CRUD API",
+        diff: "advanced",
+        priority: true,
+        spoken: "Designing a production-ready CRUD microservice requires: 1) Pydantic schemas for input validation and output serialization, 2) Clean database abstraction using Motor for async MongoDB access, 3) JWT authentication and role-based access control dependencies, 4) Centralized exception handling, 5) Pytest test suites with dependency overrides, and 6) Structured logging with correlation IDs.",
+        code: `from fastapi import FastAPI, Depends, HTTPException, status, Query
+from pydantic import BaseModel, Field
+from typing import AsyncGenerator
+from motor.motor_asyncio import AsyncIOMotorClient
+import uuid
+
+app = FastAPI(title="Ticket Service")
+
+# 1. Pydantic Schemas
+class TicketCreate(BaseModel):
+    title: str = Field(..., min_length=3, max_length=100)
+    description: str
+    priority: str = Field(default="MEDIUM", pattern="^(LOW|MEDIUM|HIGH)$")
+
+class TicketResponse(BaseModel):
+    id: str
+    title: str
+    description: str
+    priority: str
+    owner_id: str
+
+# 2. Database Dependency
+async def get_db():
+    client = AsyncIOMotorClient("mongodb://localhost:27017")
+    db = client.support_db
+    try:
+        yield db
+    finally:
+        pass # Client lifecycle managed globally
+
+# 3. Security Mock
+async def get_current_user():
+    return {"user_id": "usr_99", "role": "SUPPORT"}
+
+# 4. CRUD Routes
+@app.post("/tickets", response_model=TicketResponse, status_code=status.HTTP_201_CREATED)
+async def create_ticket(
+    payload: TicketCreate,
+    db = Depends(get_db),
+    user = Depends(get_current_user)
+):
+    ticket_id = f"tick_{uuid.uuid4().hex[:8]}"
+    doc = {"_id": ticket_id, **payload.model_dump(), "owner_id": user["user_id"]}
+    await db.tickets.insert_one(doc)
+    return {"id": ticket_id, **payload.model_dump(), "owner_id": user["user_id"]}`
+      }
+    ];
+
+    const State = {
+      theme: localStorage.getItem("fstk_theme") || "light",
+      completed: JSON.parse(localStorage.getItem("fstk_api_completed") || "[]"),
+      bookmarked: JSON.parse(localStorage.getItem("fstk_api_bookmarked") || "[]"),
+      revisionOnly: false,
+      filterDiff: "all",
+      filterStatus: "all",
+      searchQuery: ""
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(State.theme);
+      renderNavigation();
+      renderQuestions();
+      updateProgress();
+      bindEvents();
+    });
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fstk_theme", theme);
+      State.theme = theme;
+    }
+
+    function bindEvents() {
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        applyTheme(State.theme === "light" ? "dark" : "light");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+          e.preventDefault();
+          document.getElementById("global-search-input").focus();
+        }
+      });
+
+      document.getElementById("global-search-input").addEventListener("input", (e) => {
+        State.searchQuery = e.target.value.toLowerCase().trim();
+        renderQuestions();
+      });
+
+      document.getElementById("filter-difficulty").addEventListener("change", (e) => {
+        State.filterDiff = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("filter-status").addEventListener("change", (e) => {
+        State.filterStatus = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("revision-mode-toggle").addEventListener("click", (e) => {
+        State.revisionOnly = !State.revisionOnly;
+        e.currentTarget.classList.toggle("btn-primary", State.revisionOnly);
+        renderQuestions();
+      });
+
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("mobile-menu-toggle").addEventListener("click", () => sidebar.classList.toggle("open"));
+      document.getElementById("sidebar-close-btn").addEventListener("click", () => sidebar.classList.remove("open"));
+    }
+
+    function renderNavigation() {
+      const container = document.getElementById("sidebar-nav-container");
+      container.innerHTML = '<div class="nav-section-title">All 35 API Questions</div>';
+
+      API_QUESTIONS.forEach(q => {
+        const item = document.createElement("a");
+        item.className = "nav-item";
+        item.href = `#${q.id}`;
+        item.innerHTML = `
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">${q.num}. ${q.title}</span>
+          <span id="badge-${q.id}" class="nav-badge">${State.completed.includes(q.id) ? '✓' : ''}</span>
+        `;
+        item.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById("sidebar").classList.remove("open");
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuestions() {
+      const target = document.getElementById("questions-render-target");
+      const rail = document.getElementById("rail-topic-outline");
+      target.innerHTML = "";
+      rail.innerHTML = "";
+
+      let filtered = API_QUESTIONS.filter(q => {
+        if (State.revisionOnly && !q.priority) return false;
+        if (State.filterDiff !== "all" && q.diff !== State.filterDiff) return false;
+
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        if (State.filterStatus === "completed" && !isDone) return false;
+        if (State.filterStatus === "incomplete" && isDone) return false;
+        if (State.filterStatus === "bookmarked" && !isMarked) return false;
+
+        if (State.searchQuery) {
+          const matchTitle = q.title.toLowerCase().includes(State.searchQuery);
+          const matchSpoken = q.spoken.toLowerCase().includes(State.searchQuery);
+          const matchCode = q.code && q.code.toLowerCase().includes(State.searchQuery);
+          if (!matchTitle && !matchSpoken && !matchCode) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById("results-count-text").innerText = `Showing ${filtered.length} of ${API_QUESTIONS.length} questions`;
+
+      if (filtered.length === 0) {
+        target.innerHTML = `
+          <div class="view-card" style="text-align:center; padding:3rem;">
+            <p style="color:var(--text-muted);">No questions match your current search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(q => {
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        const railLink = document.createElement("a");
+        railLink.href = `#${q.id}`;
+        railLink.style.cssText = "color:var(--text-muted); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;";
+        railLink.innerText = `${q.num}. ${q.title}`;
+        rail.appendChild(railLink);
+
+        const card = document.createElement("article");
+        card.className = "view-card";
+        card.id = q.id;
+
+        card.innerHTML = `
+          <div class="q-meta">
+            <span class="tag tag-diff-${q.diff}">${q.diff}</span>
+            <span class="tag tag-topic">Question ${q.num} of 35</span>
+            ${q.priority ? '<span class="tag" style="background:#EEF2FF; color:#4568E8;">★ High Priority</span>' : ''}
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">Target: 60-90s spoken</span>
+          </div>
+
+          <h2 class="q-title">${q.num}. ${q.title}</h2>
+
+          <div class="q-section-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Interview-Ready Spoken Answer
+          </div>
+          <div class="callout-box">
+            <p><strong>"${escapeHTML(q.spoken)}"</strong></p>
+          </div>
+
+          ${q.explanation ? `
+            <div class="q-section-heading">Architectural Context & Internals</div>
+            <p style="font-size:0.93rem; color:var(--text-main); margin-bottom:1rem;">${escapeHTML(q.explanation)}</p>
+          ` : ''}
+
+          ${q.table ? `
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>${q.table.headers.map(h => `<th>${escapeHTML(h)}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${q.table.rows.map(r => `<tr>${r.map(c => `<td>${escapeHTML(c)}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          ${q.code ? `
+            <div class="code-container">
+              <div class="code-header">
+                <span>Production API Implementation</span>
+                <button class="btn btn-ghost" style="color:#FFF; padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="copyCode(this)">Copy Snippet</button>
+              </div>
+              <pre><code>${escapeHTML(q.code)}</code></pre>
+            </div>
+          ` : ''}
+
+          ${q.followUps && q.followUps.length > 0 ? `
+            <div class="q-section-heading">Likely Interviewer Follow-Ups</div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+              ${q.followUps.map(f => `
+                <div style="background:var(--bg-primary); padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.875rem;">
+                  <strong style="color:var(--text-main); display:block; margin-bottom:0.25rem;">Q: ${escapeHTML(f.q)}</strong>
+                  <span style="color:var(--text-muted);">A: ${escapeHTML(f.a)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="btn-action-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn ${isDone ? 'btn-primary' : ''}" onclick="toggleCompleted('${q.id}')">
+                ${isDone ? '✓ Completed' : 'Mark as Completed'}
+              </button>
+              <button class="btn" onclick="toggleBookmarked('${q.id}')">
+                ${isMarked ? '★ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ID: <code>${q.id}</code>
+            </div>
+          </div>
+        `;
+
+        target.appendChild(card);
+      });
+    }
+
+    function toggleCompleted(id) {
+      if (State.completed.includes(id)) {
+        State.completed = State.completed.filter(x => x !== id);
+      } else {
+        State.completed.push(id);
+      }
+      localStorage.setItem("fstk_api_completed", JSON.stringify(State.completed));
+      updateProgress();
+      renderQuestions();
+      renderNavigation();
+    }
+
+    function toggleBookmarked(id) {
+      if (State.bookmarked.includes(id)) {
+        State.bookmarked = State.bookmarked.filter(x => x !== id);
+      } else {
+        State.bookmarked.push(id);
+      }
+      localStorage.setItem("fstk_api_bookmarked", JSON.stringify(State.bookmarked));
+      renderQuestions();
+    }
+
+    function copyCode(btn) {
+      const code = btn.closest(".code-container").querySelector("code").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy Snippet", 2000);
+      });
+    }
+
+    function updateProgress() {
+      const total = API_QUESTIONS.length;
+      const done = State.completed.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("section-progress-bar").style.width = `${pct}%`;
+      document.getElementById("section-progress-label").innerText = `${done}/${total} (${pct}%)`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

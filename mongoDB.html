@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section E: MongoDB — Complete 5 YOE Full-Stack Interview Guide</title>
+  <style>
+    :root {
+      --bg-primary: #F6F8FC;
+      --surface: #FFFFFF;
+      --sidebar-bg: #17243A;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #172033;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --warning-bg: #FFF7E6;
+      --warning-text: #B45309;
+      --success-bg: #EAF8F0;
+      --success-text: #0F766E;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #64748B;
+      --sidebar-active: #F8FAFC;
+      --primary: #6384F9;
+      --primary-hover: #4568E8;
+      --secondary: #14B8A6;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #1E293B;
+      --code-bg: #050811;
+      --code-text: #F8FAFC;
+      --warning-bg: #2C1E04;
+      --warning-text: #FBBF24;
+      --success-bg: #062D24;
+      --success-text: #34D399;
+      --danger-bg: #361010;
+      --danger-text: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; }
+
+    #sidebar { width: 330px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.25s ease; border-right: 1px solid var(--border); }
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    #content-area { flex: 1; display: flex; overflow-y: auto; scroll-behavior: smooth; }
+    #content-stage { flex: 1; padding: 2rem 3rem; max-width: 1080px; margin: 0 auto; width: 100%; }
+    #context-rail { width: 280px; padding: 1.75rem 1.25rem; border-left: 1px solid var(--border); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+
+    header.top-bar { background: var(--surface); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; flex-shrink: 0; z-index: 30; }
+    .search-wrapper { position: relative; width: 440px; }
+    .search-input { width: 100%; padding: 0.5rem 2.2rem 0.5rem 2.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-main); font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(69, 104, 232, 0.2); }
+    .search-kbd { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; padding: 0.15rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono); }
+    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-muted); fill: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); transition: all 0.15s; }
+    .btn:hover { background: var(--bg-primary); }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-ghost { background: transparent; border-color: transparent; }
+
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .view-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); scroll-margin-top: 1.5rem; }
+    .q-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-diff-beginner { background: var(--success-bg); color: var(--success-text); }
+    .tag-diff-intermediate { background: var(--warning-bg); color: var(--warning-text); }
+    .tag-diff-advanced { background: var(--danger-bg); color: var(--danger-text); }
+    .tag-topic { background: var(--bg-primary); color: var(--text-muted); border: 1px solid var(--border); }
+    
+    .q-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.35; }
+    .q-section-heading { font-size: 0.88rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .callout-box { background: var(--bg-primary); border-left: 4px solid var(--primary); padding: 1.1rem 1.3rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 0.75rem 0 1.25rem; font-size: 0.95rem; }
+    .callout-box p { margin-bottom: 0.5rem; }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .code-container { background: var(--code-bg); border-radius: var(--radius); margin: 1.1rem 0; overflow: hidden; border: 1px solid #1E293B; }
+    .code-header { background: #1E293B; padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: #94A3B8; }
+    pre { padding: 1rem 1.2rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.86rem; color: var(--code-text); line-height: 1.55; }
+
+    .table-container { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left; }
+    th { background: var(--bg-primary); padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .mobile-menu-btn { display: none; }
+    @media (max-width: 1024px) {
+      #context-rail { display: none; }
+      #content-stage { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-menu-btn { display: inline-flex; }
+      .search-wrapper { width: 180px; }
+      #content-stage { padding: 1rem; }
+    }
+
+    @media print {
+      body { height: auto; overflow: visible; background: #FFF; color: #000; }
+      #sidebar, header.top-bar, #context-rail, .interactive-toolbar, .btn-action-group { display: none !important; }
+      #main-container, #content-area, #content-stage { overflow: visible !important; width: 100% !important; padding: 0 !important; }
+      .view-card { border: none !important; box-shadow: none !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Prep</span>
+      </div>
+      <button class="btn btn-ghost" id="sidebar-close-btn" style="color:#FFF; display:none;">✕</button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>Section E Completion</span>
+        <span id="section-progress-label">0/19 (0%)</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="section-progress-bar" style="width:0%; height:100%; background:var(--primary); transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Jump to Question</div>
+      <!-- Injected via JS -->
+    </nav>
+  </aside>
+
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="global-search-input" class="search-input" placeholder="Search MongoDB queries, aggregation, indexes..." autocomplete="off">
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="revision-mode-toggle" title="Show High Priority Questions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Revision Filter</span>
+        </button>
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn" onclick="window.print()" title="Print Section">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="content-area">
+      <div id="content-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">Section E: MongoDB Architecture & Query Engineering</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Exhaustive, interview-ready guide covering all 19 MongoDB questions for 5-YOE Full Stack Developers (~2 years MongoDB focus). Covers document modeling, ESR compound indexing rules, covered queries, aggregation pipelines, WiredTiger transactions, explain() analysis, and replica set sharding.</p>
+        </div>
+
+        <div class="interactive-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <select id="filter-difficulty" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Difficulties</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select id="filter-status" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Questions</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+              <option value="bookmarked">Bookmarked</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);" id="results-count-text">Showing 19 of 19 questions</div>
+        </div>
+
+        <div id="questions-render-target"></div>
+      </div>
+
+      <aside id="context-rail">
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.75rem;">
+          Table of Contents
+        </div>
+        <div id="rail-topic-outline" style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.83rem;"></div>
+
+        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;">
+            5-YOE Senior Insight
+          </div>
+          <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">
+            In MongoDB interviews, demonstrate mastery of the <strong>ESR (Equality, Sort, Range)</strong> rule, <strong>WiredTiger document-level locking</strong>, and <strong>aggregation pipeline memory constraints</strong> (100MB RAM limit without <code>allowDiskUse</code>). Never answer schema design questions without analyzing write-to-read ratios and 16MB BSON limits.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const MONGODB_QUESTIONS = [
+      {
+        id: "db-01",
+        num: 1,
+        title: "SQL versus MongoDB (NoSQL): Architectural and Concurrency Trade-Offs",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Relational SQL databases enforce strict, normalized schemas across tables with foreign keys and multi-table JOINs, prioritizing ACID transactions and zero data redundancy. MongoDB is a distributed, document-oriented database storing flexible BSON documents. It optimizes for hierarchical read patterns and developer velocity by collocating related data in a single document, avoiding costly joins. SQL scales primarily vertically with read replicas, whereas MongoDB supports native horizontal sharding out of the box.",
+        explanation: "SQL normalizes entities (1NF to 3NF) to guarantee write consistency and avoid update anomalies. MongoDB denormalizes data by design, aligning data structures directly with application domain models. While MongoDB supports multi-document transactions (via WiredTiger snapshots), it performs best when operations are contained within single documents, which are naturally atomic.",
+        table: {
+          headers: ["Attribute", "Relational SQL (e.g., PostgreSQL)", "MongoDB (BSON Document Store)"],
+          rows: [
+            ["Data Structure", "Structured tables, rigid columns, rows", "Dynamic BSON (Binary JSON) documents"],
+            ["Data Relationships", "Foreign keys + indexed relational JOINs", "Embedded subdocuments or manual $lookup joins"],
+            ["Atomicity & ACID", "Native across entire schemas & tables", "Atomic per document; multi-doc transactions available"],
+            ["Scaling Model", "Vertical scale-up; read-replicas for reads", "Horizontal scale-out via native partition sharding"],
+            ["Schema Evolution", "Requires explicit schema migrations (ALTER TABLE)", "Polymorphic/flexible schema validated at application layer"]
+          ]
+        },
+        followUps: [
+          { q: "When should an enterprise choose SQL over MongoDB?", a: "When data is heavily relational, requires complex analytical multi-table joins, or demands strict ACID guarantees across distinct entities without data duplication (e.g., core ledger banking systems)." }
+        ]
+      },
+      {
+        id: "db-02",
+        num: 2,
+        title: "Embedded Documents versus References (Normalization vs Denormalization)",
+        diff: "intermediate",
+        priority: true,
+        spoken: "In MongoDB, we decide between embedding and referencing based on the relationship cardinality and access patterns. We embed subdocuments for 1-to-1 or bounded 1-to-few relationships where data is frequently read together, eliminating the need for joins and allowing single-operation atomic updates. We use references (storing ObjectIDs) for 1-to-many or unbounded 1-to-squillions relationships, or when embedded data updates frequently across multiple parents, to prevent document growth and avoid hitting the 16MB BSON document limit.",
+        table: {
+          headers: ["Pattern", "Ideal Cardinality", "Pros", "Cons"],
+          rows: [
+            ["Embedding (Denormalized)", "1:1, 1:Few (Bounded < 100)", "Single I/O read, atomic updates, zero joins", "16MB document size limit, data duplication risk"],
+            ["Referencing (Normalized)", "1:Many, 1:Squillions, M:N", "Prevents document bloat, eliminates update duplication", "Requires multiple queries or expensive $lookup aggregations"]
+          ]
+        },
+        code: `// EMBEDDED: Addresses bounded to user (read together, bounded size)
+{
+  "_id": ObjectId("64a1f..."),
+  "name": "Jane Doe",
+  "addresses": [
+    { "type": "shipping", "street": "123 Main St", "city": "Bengaluru" }
+  ]
+}
+
+// REFERENCED: Logs/Audit events unbounded (grows indefinitely)
+// Never embed unbounded arrays inside parent documents!
+{
+  "_id": ObjectId("64a2c..."),
+  "user_id": ObjectId("64a1f..."), // Foreign reference
+  "action": "LOGIN_SUCCESS",
+  "timestamp": ISODate("2026-10-29T10:00:00Z")
+}`
+      },
+      {
+        id: "db-03",
+        num: 3,
+        title: "Model Users, Tickets, Comments, and Ticket History for Production Scale",
+        diff: "advanced",
+        priority: true,
+        spoken: "For a production ticket system, we use a hybrid data model. The Ticket document embeds the user summary (user ID, name) to display the creator without joins. Comments can be embedded if bounded, but because customer support tickets can have hundreds of comments and attachments, comments are typically stored in a separate collection referenced by ticket_id. Ticket History (audit logs) must always live in a separate collection to prevent unbounded growth and avoid exceeding the 16MB BSON limit.",
+        code: `// 1. Collection: 'tickets' (Core entity with bounded data)
+{
+  "_id": "TICK-10492",
+  "title": "Database connection pool timeout in staging",
+  "status": "OPEN",
+  "priority": "HIGH",
+  "creator": { "id": "usr_101", "name": "Arun K" }, // Embedded summary
+  "assignee_id": "usr_205",
+  "tags": ["database", "backend"],
+  "created_at": ISODate("2026-10-29T08:00:00Z"),
+  "updated_at": ISODate("2026-10-29T08:30:00Z")
+}
+
+// 2. Collection: 'ticket_comments' (Unbounded 1:Many)
+{
+  "_id": ObjectId("6721..."),
+  "ticket_id": "TICK-10492", // Indexed reference
+  "author_id": "usr_205",
+  "body": "Investigating active connection metrics in CloudWatch.",
+  "attachments": [{ "name": "trace.log", "url": "s3://..." }],
+  "created_at": ISODate("2026-10-29T08:15:00Z")
+}
+
+// 3. Collection: 'ticket_audit_history' (Append-only immutable log)
+{
+  "_id": ObjectId("6722..."),
+  "ticket_id": "TICK-10492",
+  "actor_id": "usr_205",
+  "field_changed": "status",
+  "old_value": "NEW",
+  "new_value": "OPEN",
+  "changed_at": ISODate("2026-10-29T08:05:00Z")
+}`
+      },
+      {
+        id: "db-04",
+        num: 4,
+        title: "Index Types: Single-Field, Compound, Multikey, Text, and TTL Indexes",
+        diff: "intermediate",
+        priority: true,
+        spoken: "MongoDB indexes use B-Tree data structures to speed up queries. Single-field indexes index a single attribute (such as _id). Compound indexes combine multiple fields to support queries with multiple filters and sort conditions. Multikey indexes index array fields, creating an index entry for every element in the array. Text indexes support full-text token search and stemming. TTL (Time-To-Live) indexes automatically delete documents after a specified time window, ideal for caching sessions and ephemeral OTP codes.",
+        code: `// 1. Single Field Index
+db.users.createIndex({ email: 1 }, { unique: true });
+
+// 2. Compound Index
+db.tickets.createIndex({ status: 1, created_at: -1 });
+
+// 3. Multikey Index (indexing array elements)
+db.tickets.createIndex({ tags: 1 });
+
+// 4. Text Index
+db.tickets.createIndex({ title: "text", description: "text" });
+
+// 5. TTL Index (Auto-deletes document 3600 seconds after created_at)
+db.user_sessions.createIndex({ created_at: 1 }, { expireAfterSeconds: 3600 });`,
+        followUps: [
+          { q: "Can a compound index contain two separate array fields?", a: "No. MongoDB does not allow a compound multikey index where more than one field is an array, as that would cause a Cartesian product of index entries." }
+        ]
+      },
+      {
+        id: "db-05",
+        num: 5,
+        title: "Compound Index Field Order: The ESR (Equality, Sort, Range) Rule",
+        diff: "advanced",
+        priority: true,
+        spoken: "The ESR rule is the gold standard for ordering fields in MongoDB compound indexes: Equality fields first, Sort fields second, and Range fields last. Equality fields narrow the search tree to a single sub-tree. Placing the Sort field next allows MongoDB to read index keys in order, avoiding an expensive in-memory sort. Range fields are placed last because once a range comparison (like $gt or $in) is evaluated, the index can no longer provide ordered traversal for subsequent fields.",
+        explanation: "If you place Range before Sort, MongoDB has to scan index keys across a range of values, which disrupts the index's sort order. This forces MongoDB to fetch intermediate documents and perform a memory-intensive blocking sort (which fails if it exceeds 100MB). Following ESR ensures both filtering and sorting are handled entirely within the B-Tree index.",
+        code: `// Query: Find active tickets for team 'backend', sorted by created_at desc, with priority in (1 to 3)
+// Filter: status == 'OPEN', team == 'backend'  (Equality: E)
+// Sort: created_at: -1                         (Sort: S)
+// Range: priority >= 2                         (Range: R)
+
+// The optimal compound index adhering to ESR:
+db.tickets.createIndex({
+  status: 1,       // 1. Equality (E)
+  team: 1,         // 1. Equality (E)
+  created_at: -1,  // 2. Sort (S)
+  priority: 1      // 3. Range (R)
+});`,
+        followUps: [
+          { q: "How is $in treated in the ESR rule?", a: "When $in is used alone, it acts as an equality check. However, when combined with a sort, $in functions like a range operator and can prevent the index from providing sorted order." }
+        ]
+      },
+      {
+        id: "db-06",
+        num: 6,
+        title: "Covered Queries: Maximizing Throughput with Zero Document Fetch",
+        diff: "intermediate",
+        priority: true,
+        spoken: "A covered query is a query that MongoDB satisfies entirely using index keys, without fetching any documents from disk or the WiredTiger cache. In explain() output, a covered query shows totalDocsExamined = 0, an IXSCAN stage, and no FETCH stage. To achieve a covered query, all fields in the query predicate, sort, and projection must be present in the index, and _id must be explicitly excluded if it is not part of the index.",
+        code: `// Create compound index:
+db.users.createIndex({ username: 1, status: 1 });
+
+// COVERED QUERY: Reads index only, zero documents examined from disk
+db.users.find(
+  { username: "john_dev" }, 
+  { _id: 0, username: 1, status: 1 } // Explicitly exclude _id
+).explain("executionStats");
+
+// executionStats metrics:
+// "totalKeysExamined": 1
+// "totalDocsExamined": 0  <-- Signifies a fully covered query!`
+      },
+      {
+        id: "db-07",
+        num: 7,
+        title: "Aggregation Pipeline Stages: $match, $group, $project, $lookup, $unwind, $facet",
+        diff: "intermediate",
+        priority: true,
+        spoken: "The MongoDB Aggregation Framework processes documents through a multi-stage pipeline, where each stage transforms the stream of documents. $match filters documents early to leverage indexes. $group aggregates data by a key (computing sums, averages, or sets). $project shapes the output document. $lookup performs left-outer joins against other collections. $unwind deconstructs arrays into individual documents. $facet runs multiple independent aggregation pipelines in parallel over the same input document stream.",
+        code: `// Enterprise aggregation: Ticket metrics grouped by status with assignee details
+db.tickets.aggregate([
+  // 1. $match early to utilize indexes
+  { $match: { is_deleted: false, created_at: { $gte: ISODate("2026-01-01") } } },
+  
+  // 2. $lookup: Left outer join to enrich assignee information
+  {
+    $lookup: {
+      from: "users",
+      localField: "assignee_id",
+      foreignField: "_id",
+      as: "assignee"
+    }
+  },
+  
+  // 3. $unwind the single-element array produced by $lookup
+  { $unwind: { path: "$assignee", preserveNullAndEmptyArrays: true } },
+  
+  // 4. $group by status to calculate totals
+  {
+    $group: {
+      "_id": "$status",
+      "total_tickets": { $sum: 1 },
+      "critical_count": {
+        $sum: { $cond: [{ $eq: ["$priority", "CRITICAL"] }, 1, 0] }
+      }
+    }
+  },
+  
+  // 5. $project to format output envelope
+  {
+    $project: {
+      _id: 0,
+      status: "$_id",
+      total_tickets: 1,
+      critical_count: 1
+    }
+  }
+]);`,
+        followUps: [
+          { q: "What is the memory limit for an aggregation pipeline stage?", a: "Each aggregation stage has a 100MB RAM limit. If exceeded, MongoDB throws an error unless `allowDiskUse: true` is enabled." }
+        ]
+      },
+      {
+        id: "db-08",
+        num: 8,
+        title: "Diagnosing Slow Queries with explain('executionStats')",
+        diff: "advanced",
+        priority: true,
+        spoken: "We diagnose slow queries by appending `.explain('executionStats')` to the query. In the output, we inspect three key indicators: 1) The winning plan stage: we want IXSCAN (Index Scan), not COLLSCAN (full collection scan). 2) The query targeting ratio: compare totalKeysExamined and totalDocsExamined against nReturned. If totalKeysExamined or totalDocsExamined is significantly higher than nReturned, the query is scanning too much data. 3) Look for an in-memory SORT stage, which indicates a missing or misordered compound index.",
+        table: {
+          headers: ["explain() Metric", "Ideal Value", "Danger Signal & Cause"],
+          rows: [
+            ["stage", "IXSCAN / PROJECTION_COVERED", "COLLSCAN (Missing index, scanning entire collection)"],
+            ["totalDocsExamined : nReturned", "Ratio of 1:1", "High ratio (10,000 : 1 implies poor index selectivity)"],
+            ["totalKeysExamined : nReturned", "Ratio of 1:1", "Scanning millions of index keys for a few documents"],
+            ["executionStages.stage == 'SORT'", "Absent (index-provided sort)", "Present (In-memory blocking sort; breaks ESR rule)"]
+          ]
+        }
+      },
+      {
+        id: "db-09",
+        num: 9,
+        title: "Atomicity and Multi-Document ACID Transactions",
+        diff: "advanced",
+        priority: true,
+        spoken: "Single-document write operations in MongoDB are always atomic, even when updating multiple nested subdocuments or array elements. Starting in version 4.0 (and 4.2 for sharded clusters), MongoDB supports multi-document ACID transactions using WiredTiger snapshot isolation. Transactions carry coordination overhead and write-lock contention, so they should only be used when operations span multiple collections or documents that cannot be modeled together.",
+        code: `// Multi-document transaction in Motor / PyMongo
+async with await client.start_session() as session:
+    async with session.start_transaction():
+        # Step 1: Deduct balance
+        await db.wallets.update_one(
+            {"_id": "usr_101", "balance": {"$gte": 500}},
+            {"$inc": {"balance": -500}},
+            session=session
+        )
+        # Step 2: Record transaction entry
+        await db.transactions.insert_one(
+            {"from": "usr_101", "to": "usr_202", "amount": 500},
+            session=session
+        )
+        # Commits automatically on block exit, rolls back on exception`
+      },
+      {
+        id: "db-10",
+        num: 10,
+        title: "updateOne vs updateMany vs replaceOne vs findOneAndUpdate",
+        diff: "intermediate",
+        priority: false,
+        spoken: "updateOne applies update operators ($set, $inc) to the first document matching the filter. updateMany updates all documents matching the filter. replaceOne replaces the entire matching document with a new document (retaining only the original _id). findOneAndUpdate atomically modifies a document and returns either the pre-update or post-update version in a single step, making it ideal for distributed counters, state machines, and job queues.",
+        code: `// Atomic state transition: grab next available ticket
+const ticket = await db.tickets.findOneAndUpdate(
+  { status: "UNASSIGNED", priority: "HIGH" },
+  { $set: { status: "PROCESSING", locked_by: "worker_node_4" } },
+  { returnDocument: "after" } // Returns updated document atomically
+);`
+      },
+      {
+        id: "db-11",
+        num: 11,
+        title: "Unique Constraints and Document Validation Rules",
+        diff: "intermediate",
+        priority: false,
+        spoken: "MongoDB enforces uniqueness using unique indexes (`db.collection.createIndex({ field: 1 }, { unique: true })`). When documents omit the indexed field, MongoDB stores null; to allow multiple documents without the field while still enforcing uniqueness for documents that have it, we use partialFilterExpression. Schema validation can also be enforced directly at the database level using JSON Schema validation in collection options.",
+        code: `// Enforce JSON schema validation at database engine level
+db.createCollection("tickets", {
+  validator: {
+    $jsonSchema: {
+      bsonType: "object",
+      required: ["title", "status", "priority"],
+      properties: {
+        title: { bsonType: "string", minLength: 5 },
+        status: { enum: ["OPEN", "IN_PROGRESS", "CLOSED"] },
+        priority: { enum: ["LOW", "MEDIUM", "HIGH", "CRITICAL"] }
+      }
+    }
+  }
+});`
+      },
+      {
+        id: "db-12",
+        num: 12,
+        title: "Offset Pagination versus Keyset (Cursor) Pagination in MongoDB",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Offset pagination uses .skip(10000).limit(20). This forces WiredTiger to scan through 10,000 index keys and discard them, resulting in O(n) performance degradation and high disk I/O. In contrast, Keyset (cursor) pagination uses an indexed field (such as _id or created_at) to fetch the next page with a range query (`find({ _id: { $lt: lastSeenId } }).sort({ _id: -1 }).limit(20)`). This provides consistent O(1) performance and stable pages even when documents are inserted concurrently.",
+        code: `// SUBOPTIMAL: Offset pagination (slow on deep pages)
+db.tickets.find().sort({ created_at: -1 }).skip(50000).limit(20);
+
+// OPTIMAL: Keyset (Cursor) pagination (O(1) execution)
+db.tickets.find({
+  created_at: { $lt: ISODate("2026-10-28T14:00:00Z") }
+}).sort({ created_at: -1 }).limit(20);`
+      },
+      {
+        id: "db-13",
+        num: 13,
+        title: "Schema Migrations in MongoDB Without Downtime",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Because MongoDB is schema-flexible, we perform schema migrations without downtime using the Expand and Contract pattern across three phases: 1) Expand: Update application code to read both the old and new field formats, while writing exclusively to the new format. 2) Migrate: Run a background batch script with rate limiting to convert existing documents. 3) Contract: Remove support for the old field format from the application code once all documents are updated.",
+        followUps: [
+          { q: "Why should we avoid running a single massive updateMany() for migrations?", a: "A massive updateMany() across millions of records will saturate WiredTiger cache, monopolize write tickets, and cause query latency spikes for production traffic. Always migrate in smaller batches (e.g. 1,000 records) with sleep pauses." }
+        ]
+      },
+      {
+        id: "db-14",
+        num: 14,
+        title: "Replica Sets versus Sharding: High Availability versus Horizontal Scalability",
+        diff: "advanced",
+        priority: true,
+        spoken: "A Replica Set provides High Availability and fault tolerance by replicating data across multiple nodes (typically 1 Primary and 2 Secondaries) with automated failover via Raft-like elections. All writes go to the Primary. Sharding provides Horizontal Scalability by partitioning massive datasets across multiple replica sets (shards) using a Shard Key, routed through mongos query routers. Replica sets scale availability and read capacity; sharding scales storage and write throughput.",
+        table: {
+          headers: ["Attribute", "Replica Sets", "Sharded Clusters"],
+          rows: [
+            ["Primary Goal", "High Availability & automatic disaster recovery", "Horizontal scaling for storage (>TB) and write load"],
+            ["Components", "Primary, Secondary, optional Arbiter", "Shard nodes, mongos routers, Config server replica set"],
+            ["Data Distribution", "Every node holds 100% of the dataset", "Data is partitioned into chunks across shards based on shard key"],
+            ["Operational Complexity", "Low (Standard production deployment)", "High (Config servers, balancer, routing management)"]
+          ]
+        }
+      },
+      {
+        id: "db-15",
+        num: 15,
+        title: "Preventing Lost Updates: Optimistic Concurrency Control in MongoDB",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Lost updates happen when two clients fetch the same document simultaneously, make edits, and save, causing the second write to overwrite the first. We prevent this using Optimistic Concurrency Control (OCC). We add a version field (`__v`) to the document. When updating, the query filter includes both the document ID and the expected version number, while incrementing `__v` by 1. If modifiedCount is 0, another client updated the document first, and the application can abort or retry.",
+        code: `async function updateTicketWithOCC(ticketId, newStatus, currentVersion) {
+  const result = await db.tickets.updateOne(
+    { _id: ticketId, __v: currentVersion }, // Verify version hasn't changed
+    {
+      $set: { status: newStatus },
+      $inc: { __v: 1 } // Increment version atomically
+    }
+  );
+  if (result.matchedCount === 0) {
+    throw new Error("Conflict: Ticket was modified by another user. Please reload.");
+  }
+}`
+      },
+      {
+        id: "db-16",
+        num: 16,
+        title: "Soft Deletion and Retention Strategies",
+        diff: "beginner",
+        priority: false,
+        spoken: "Soft deletion marks records as inactive using fields like `is_deleted: true` and `deleted_at: ISODate()` instead of removing them permanently. This preserves referential integrity and audit trails. To maintain query performance, all compound indexes should include `is_deleted` as a prefix equality field, or use partial indexes (`partialFilterExpression: { is_deleted: false }`) to index only active documents.",
+        code: `// Partial Index: Indexes only active tickets, saving memory
+db.tickets.createIndex(
+  { status: 1, created_at: -1 },
+  { partialFilterExpression: { is_deleted: false } }
+);`
+      },
+      {
+        id: "db-17",
+        num: 17,
+        title: "Design Optimal Indexes for Status, Assignee, and Creation Date Filters",
+        diff: "advanced",
+        priority: true,
+        spoken: "Given a common support ticket query that filters by status, filters by assignee, and sorts or ranges by created_at, we apply the ESR rule. Status and Assignee are exact equality filters (E), and created_at is the sort or range field (S/R). Therefore, the optimal compound index order is: `{ assignee_id: 1, status: 1, created_at: -1 }`. Field order among equality keys should place the higher-cardinality field first for better selectivity.",
+        code: `// Query pattern supported:
+// db.tickets.find({ assignee_id: "usr_99", status: "OPEN" }).sort({ created_at: -1 })
+
+db.tickets.createIndex({
+  assignee_id: 1,  // Equality (High cardinality)
+  status: 1,       // Equality (Low cardinality)
+  created_at: -1   // Sort
+});`
+      },
+      {
+        id: "db-18",
+        num: 18,
+        title: "Investigating and Resolving a Slow Query on a 50-Million Document Collection",
+        diff: "advanced",
+        priority: true,
+        spoken: "When a query is slow on a 50-million document collection, my investigation workflow is: 1) Pull the query pattern from the MongoDB slow query log or Database Profiler (system.profile) where execution time exceeds 100ms. 2) Run `.explain('executionStats')` on the query to identify if it is running a COLLSCAN, performing an in-memory sort, or examining millions of keys. 3) Add an optimal compound index matching the ESR rule. 4) Use index projections to eliminate document fetches. 5) If memory spikes persist, verify WiredTiger cache utilization and check whether working-set indexes fit in RAM.",
+        followUps: [
+          { q: "What should you check if a query has an index but is still slow?", a: "Check whether index keys fit into RAM (indexSizes), verify index prefix order, and check for high lock contention or write ticket saturation." }
+        ]
+      },
+      {
+        id: "db-19",
+        num: 19,
+        title: "Write Production MongoDB Queries for Ticket Filtering, Pagination, and Aggregation",
+        diff: "advanced",
+        priority: true,
+        spoken: "A complete production implementation requires: 1) Dynamic query filter assembly based on user inputs, 2) Fast Keyset cursor pagination, and 3) Aggregation pipelines with early $match filtering and faceted total count calculations.",
+        code: `// Motor / PyMongo production query execution:
+async def get_tickets_paginated(db, status=None, assignee=None, last_created=None, limit=20):
+    query = {"is_deleted": False}
+    if status:
+        query["status"] = status
+    if assignee:
+        query["assignee_id"] = assignee
+    if last_created:
+        query["created_at"] = {"$lt": last_created} # Keyset pagination filter
+
+    cursor = db.tickets.find(
+        query,
+        {"_id": 1, "title": 1, "status": 1, "priority": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(limit)
+
+    return [doc async for doc in cursor]`
+      }
+    ];
+
+    const State = {
+      theme: localStorage.getItem("fstk_theme") || "light",
+      completed: JSON.parse(localStorage.getItem("fstk_db_completed") || "[]"),
+      bookmarked: JSON.parse(localStorage.getItem("fstk_db_bookmarked") || "[]"),
+      revisionOnly: false,
+      filterDiff: "all",
+      filterStatus: "all",
+      searchQuery: ""
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(State.theme);
+      renderNavigation();
+      renderQuestions();
+      updateProgress();
+      bindEvents();
+    });
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fstk_theme", theme);
+      State.theme = theme;
+    }
+
+    function bindEvents() {
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        applyTheme(State.theme === "light" ? "dark" : "light");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+          e.preventDefault();
+          document.getElementById("global-search-input").focus();
+        }
+      });
+
+      document.getElementById("global-search-input").addEventListener("input", (e) => {
+        State.searchQuery = e.target.value.toLowerCase().trim();
+        renderQuestions();
+      });
+
+      document.getElementById("filter-difficulty").addEventListener("change", (e) => {
+        State.filterDiff = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("filter-status").addEventListener("change", (e) => {
+        State.filterStatus = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("revision-mode-toggle").addEventListener("click", (e) => {
+        State.revisionOnly = !State.revisionOnly;
+        e.currentTarget.classList.toggle("btn-primary", State.revisionOnly);
+        renderQuestions();
+      });
+
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("mobile-menu-toggle").addEventListener("click", () => sidebar.classList.toggle("open"));
+      document.getElementById("sidebar-close-btn").addEventListener("click", () => sidebar.classList.remove("open"));
+    }
+
+    function renderNavigation() {
+      const container = document.getElementById("sidebar-nav-container");
+      container.innerHTML = '<div class="nav-section-title">All 19 MongoDB Questions</div>';
+
+      MONGODB_QUESTIONS.forEach(q => {
+        const item = document.createElement("a");
+        item.className = "nav-item";
+        item.href = `#${q.id}`;
+        item.innerHTML = `
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">${q.num}. ${q.title}</span>
+          <span id="badge-${q.id}" class="nav-badge">${State.completed.includes(q.id) ? '✓' : ''}</span>
+        `;
+        item.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById("sidebar").classList.remove("open");
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuestions() {
+      const target = document.getElementById("questions-render-target");
+      const rail = document.getElementById("rail-topic-outline");
+      target.innerHTML = "";
+      rail.innerHTML = "";
+
+      let filtered = MONGODB_QUESTIONS.filter(q => {
+        if (State.revisionOnly && !q.priority) return false;
+        if (State.filterDiff !== "all" && q.diff !== State.filterDiff) return false;
+
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        if (State.filterStatus === "completed" && !isDone) return false;
+        if (State.filterStatus === "incomplete" && isDone) return false;
+        if (State.filterStatus === "bookmarked" && !isMarked) return false;
+
+        if (State.searchQuery) {
+          const matchTitle = q.title.toLowerCase().includes(State.searchQuery);
+          const matchSpoken = q.spoken.toLowerCase().includes(State.searchQuery);
+          const matchCode = q.code && q.code.toLowerCase().includes(State.searchQuery);
+          if (!matchTitle && !matchSpoken && !matchCode) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById("results-count-text").innerText = `Showing ${filtered.length} of ${MONGODB_QUESTIONS.length} questions`;
+
+      if (filtered.length === 0) {
+        target.innerHTML = `
+          <div class="view-card" style="text-align:center; padding:3rem;">
+            <p style="color:var(--text-muted);">No questions match your current search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(q => {
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        const railLink = document.createElement("a");
+        railLink.href = `#${q.id}`;
+        railLink.style.cssText = "color:var(--text-muted); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;";
+        railLink.innerText = `${q.num}. ${q.title}`;
+        rail.appendChild(railLink);
+
+        const card = document.createElement("article");
+        card.className = "view-card";
+        card.id = q.id;
+
+        card.innerHTML = `
+          <div class="q-meta">
+            <span class="tag tag-diff-${q.diff}">${q.diff}</span>
+            <span class="tag tag-topic">Question ${q.num} of 19</span>
+            ${q.priority ? '<span class="tag" style="background:#EEF2FF; color:#4568E8;">★ High Priority</span>' : ''}
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">Target: 60-90s spoken</span>
+          </div>
+
+          <h2 class="q-title">${q.num}. ${q.title}</h2>
+
+          <div class="q-section-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Interview-Ready Spoken Answer
+          </div>
+          <div class="callout-box">
+            <p><strong>"${escapeHTML(q.spoken)}"</strong></p>
+          </div>
+
+          ${q.explanation ? `
+            <div class="q-section-heading">Database Internals & Storage Engine Mechanics</div>
+            <p style="font-size:0.93rem; color:var(--text-main); margin-bottom:1rem;">${escapeHTML(q.explanation)}</p>
+          ` : ''}
+
+          ${q.table ? `
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>${q.table.headers.map(h => `<th>${escapeHTML(h)}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${q.table.rows.map(r => `<tr>${r.map(c => `<td>${escapeHTML(c)}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          ${q.code ? `
+            <div class="code-container">
+              <div class="code-header">
+                <span>Production Query / Schema</span>
+                <button class="btn btn-ghost" style="color:#FFF; padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="copyCode(this)">Copy Snippet</button>
+              </div>
+              <pre><code>${escapeHTML(q.code)}</code></pre>
+            </div>
+          ` : ''}
+
+          ${q.followUps && q.followUps.length > 0 ? `
+            <div class="q-section-heading">Likely Interviewer Follow-Ups</div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+              ${q.followUps.map(f => `
+                <div style="background:var(--bg-primary); padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.875rem;">
+                  <strong style="color:var(--text-main); display:block; margin-bottom:0.25rem;">Q: ${escapeHTML(f.q)}</strong>
+                  <span style="color:var(--text-muted);">A: ${escapeHTML(f.a)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="btn-action-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn ${isDone ? 'btn-primary' : ''}" onclick="toggleCompleted('${q.id}')">
+                ${isDone ? '✓ Completed' : 'Mark as Completed'}
+              </button>
+              <button class="btn" onclick="toggleBookmarked('${q.id}')">
+                ${isMarked ? '★ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ID: <code>${q.id}</code>
+            </div>
+          </div>
+        `;
+
+        target.appendChild(card);
+      });
+    }
+
+    function toggleCompleted(id) {
+      if (State.completed.includes(id)) {
+        State.completed = State.completed.filter(x => x !== id);
+      } else {
+        State.completed.push(id);
+      }
+      localStorage.setItem("fstk_db_completed", JSON.stringify(State.completed));
+      updateProgress();
+      renderQuestions();
+      renderNavigation();
+    }
+
+    function toggleBookmarked(id) {
+      if (State.bookmarked.includes(id)) {
+        State.bookmarked = State.bookmarked.filter(x => x !== id);
+      } else {
+        State.bookmarked.push(id);
+      }
+      localStorage.setItem("fstk_db_bookmarked", JSON.stringify(State.bookmarked));
+      renderQuestions();
+    }
+
+    function copyCode(btn) {
+      const code = btn.closest(".code-container").querySelector("code").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy Snippet", 2000);
+      });
+    }
+
+    function updateProgress() {
+      const total = MONGODB_QUESTIONS.length;
+      const done = State.completed.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("section-progress-bar").style.width = `${pct}%`;
+      document.getElementById("section-progress-label").innerText = `${done}/${total} (${pct}%)`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

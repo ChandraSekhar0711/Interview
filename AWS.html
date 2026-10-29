@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section F: AWS Fundamentals — Complete 5 YOE Full-Stack Guide</title>
+  <style>
+    :root {
+      --bg-primary: #F6F8FC;
+      --surface: #FFFFFF;
+      --sidebar-bg: #17243A;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #172033;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --warning-bg: #FFF7E6;
+      --warning-text: #B45309;
+      --success-bg: #EAF8F0;
+      --success-text: #0F766E;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #64748B;
+      --sidebar-active: #F8FAFC;
+      --primary: #6384F9;
+      --primary-hover: #4568E8;
+      --secondary: #14B8A6;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #1E293B;
+      --code-bg: #050811;
+      --code-text: #F8FAFC;
+      --warning-bg: #2C1E04;
+      --warning-text: #FBBF24;
+      --success-bg: #062D24;
+      --success-text: #34D399;
+      --danger-bg: #361010;
+      --danger-text: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; }
+
+    #sidebar { width: 330px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.25s ease; border-right: 1px solid var(--border); }
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    #content-area { flex: 1; display: flex; overflow-y: auto; scroll-behavior: smooth; }
+    #content-stage { flex: 1; padding: 2rem 3rem; max-width: 1080px; margin: 0 auto; width: 100%; }
+    #context-rail { width: 280px; padding: 1.75rem 1.25rem; border-left: 1px solid var(--border); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+
+    header.top-bar { background: var(--surface); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; flex-shrink: 0; z-index: 30; }
+    .search-wrapper { position: relative; width: 440px; }
+    .search-input { width: 100%; padding: 0.5rem 2.2rem 0.5rem 2.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-main); font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(69, 104, 232, 0.2); }
+    .search-kbd { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; padding: 0.15rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono); }
+    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-muted); fill: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); transition: all 0.15s; }
+    .btn:hover { background: var(--bg-primary); }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-ghost { background: transparent; border-color: transparent; }
+
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .view-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); scroll-margin-top: 1.5rem; }
+    .q-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-diff-beginner { background: var(--success-bg); color: var(--success-text); }
+    .tag-diff-intermediate { background: var(--warning-bg); color: var(--warning-text); }
+    .tag-diff-advanced { background: var(--danger-bg); color: var(--danger-text); }
+    .tag-topic { background: var(--bg-primary); color: var(--text-muted); border: 1px solid var(--border); }
+    
+    .q-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.35; }
+    .q-section-heading { font-size: 0.88rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .callout-box { background: var(--bg-primary); border-left: 4px solid var(--primary); padding: 1.1rem 1.3rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 0.75rem 0 1.25rem; font-size: 0.95rem; }
+    .callout-box p { margin-bottom: 0.5rem; }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .code-container { background: var(--code-bg); border-radius: var(--radius); margin: 1.1rem 0; overflow: hidden; border: 1px solid #1E293B; }
+    .code-header { background: #1E293B; padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: #94A3B8; }
+    pre { padding: 1rem 1.2rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.86rem; color: var(--code-text); line-height: 1.55; }
+
+    .table-container { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left; }
+    th { background: var(--bg-primary); padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .mobile-menu-btn { display: none; }
+    @media (max-width: 1024px) {
+      #context-rail { display: none; }
+      #content-stage { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-menu-btn { display: inline-flex; }
+      .search-wrapper { width: 180px; }
+      #content-stage { padding: 1rem; }
+    }
+
+    @media print {
+      body { height: auto; overflow: visible; background: #FFF; color: #000; }
+      #sidebar, header.top-bar, #context-rail, .interactive-toolbar, .btn-action-group { display: none !important; }
+      #main-container, #content-area, #content-stage { overflow: visible !important; width: 100% !important; padding: 0 !important; }
+      .view-card { border: none !important; box-shadow: none !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Prep</span>
+      </div>
+      <button class="btn btn-ghost" id="sidebar-close-btn" style="color:#FFF; display:none;">✕</button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>AWS Fundamentals Progress</span>
+        <span id="section-progress-label">0/16 (0%)</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="section-progress-bar" style="width:0%; height:100%; background:var(--primary); transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Jump to Question</div>
+      <!-- Injected via JS -->
+    </nav>
+  </aside>
+
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="global-search-input" class="search-input" placeholder="Search VPC, S3, IAM, Lambda, SQS, ECS..." autocomplete="off">
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="revision-mode-toggle" title="Show High Priority Questions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Revision Filter</span>
+        </button>
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn" onclick="window.print()" title="Print Section">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="content-area">
+      <div id="content-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">Section F: AWS Fundamentals</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Exhaustive, interview-ready guide covering all 16 core AWS infrastructure and distributed architecture questions for 5-YOE Full Stack Developers. Focuses on VPC networking, compute selection (EC2, ECS Fargate, Lambda, EKS), S3 presigned security, IAM least-privilege, async messaging (SQS/SNS), and cost optimization.</p>
+        </div>
+
+        <div class="interactive-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <select id="filter-difficulty" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Difficulties</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select id="filter-status" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Questions</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+              <option value="bookmarked">Bookmarked</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);" id="results-count-text">Showing 16 of 16 questions</div>
+        </div>
+
+        <div id="questions-render-target"></div>
+      </div>
+
+      <aside id="context-rail">
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.75rem;">
+          Table of Contents
+        </div>
+        <div id="rail-topic-outline" style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.83rem;"></div>
+
+        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;">
+            5-YOE Cloud Architecture Insight
+          </div>
+          <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">
+            In full-stack interviews, differentiate between <strong>managed serverless compute</strong> and <strong>infrastructure ownership</strong>. Frame security around <strong>defense-in-depth</strong> (IAM roles, Security Groups, private subnets) and never describe storing long-lived AWS credentials in container files or git repos.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const AWS_QUESTIONS = [
+      {
+        id: "aws-159",
+        num: 159,
+        title: "Explain EC2, Lambda, ECS, EKS and when you would choose each",
+        diff: "intermediate",
+        priority: true,
+        spoken: "EC2 provides raw virtual machines where you manage the OS, runtime, and scaling, best suited for legacy apps or long-running monolithic services requiring custom kernel modules. Lambda is event-driven serverless compute that executes code in response to triggers and scales to zero, ideal for asynchronous tasks, webhooks, and intermittent traffic. ECS is AWS-native container orchestration, perfect for containerized microservices and web APIs without Kubernetes overhead. EKS is managed Kubernetes, ideal when an enterprise demands multi-cloud portability, advanced service mesh, or unified Kubernetes tooling across teams.",
+        explanation: "Compute decisions balance operational overhead against control. EC2 requires manual patching and instance configuration. Lambda offloads all operational burdens but has execution time limits (15 minutes max) and cold start considerations. ECS provides predictable container deployments natively integrated with AWS IAM and ALB. EKS provides the standard open-source Kubernetes API ecosystem at the cost of higher cluster control plane complexity.",
+        table: {
+          headers: ["Compute Service", "Operational Overhead", "Scaling Granularity", "Pricing Model", "Primary Fit"],
+          rows: [
+            ["EC2", "High (OS patching, AMI updates)", "Slow (Minutes to boot instances)", "Per-second per running instance", "Monoliths, custom OS dependencies, GPU compute"],
+            ["Lambda", "Zero (Fully managed serverless)", "Sub-second (Event burst per request)", "Per invocation + GB-second duration", "Event processors, Webhooks, CRON jobs, S3 triggers"],
+            ["ECS", "Low with Fargate / Medium on EC2", "Fast (30-60s container task scale)", "Per task CPU/RAM (Fargate) or underlying EC2", "Containerized microservices, FastAPI/Node REST APIs"],
+            ["EKS", "Medium to High (Cluster management)", "Fast (HPA + Karpenter node auto-scale)", "Cluster control plane fee + node costs", "Complex container architectures, multi-cloud K8s"]
+          ]
+        },
+        followUps: [
+          { q: "Why choose ECS Fargate over Lambda for a high-traffic web API?", a: "For continuous, predictable high-concurrency traffic (thousands of req/sec), running container tasks in ECS Fargate avoids cold starts, avoids per-invocation request cost inflation, and simplifies database connection pool reuse." }
+        ]
+      },
+      {
+        id: "aws-160",
+        num: 160,
+        title: "What is the difference between ECS on Fargate and ECS on EC2?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "In ECS on EC2, you manage the underlying virtual machine cluster: you must handle OS patching, security hardening, instance bin-packing, and Auto Scaling groups. In ECS on Fargate, AWS manages the underlying compute infrastructure serverless-style: you define the CPU and memory limits per task, and AWS provisions and scales the container environment directly without any servers to maintain.",
+        table: {
+          headers: ["Feature", "ECS on Fargate", "ECS on EC2"],
+          rows: [
+            ["Host Management", "Zero server management; managed by AWS", "You manage EC2 OS, patches, agent updates"],
+            ["Resource Isolation", "Dedicated VM-level isolation per task", "Shared OS kernel across multiple container tasks"],
+            ["Cost Model", "Pay for exact CPU/Memory requested per second", "Pay for underlying EC2 instances regardless of utilization"],
+            ["Startup Time", "Slightly slower (task download and bootstrap)", "Instant if container images are pre-cached on host"]
+          ]
+        },
+        followUps: [
+          { q: "When is ECS on EC2 preferable to Fargate?", a: "When you have steady-state baseline workloads where EC2 Reserved Instances or Savings Plans provide major cost savings, or when your tasks require specialized hardware like custom GPUs." }
+        ]
+      },
+      {
+        id: "aws-161",
+        num: 161,
+        title: "How would you deploy a FastAPI application to EC2?",
+        diff: "intermediate",
+        priority: false,
+        spoken: "In production, we package the FastAPI application into a Docker container and run it on an EC2 instance in a private subnet behind an Application Load Balancer. On the instance, we use systemd or Docker Compose to run Uvicorn managed by Gunicorn process workers. Traffic terminates TLS at the ALB and forwards HTTP requests to port 8000. An Auto Scaling Group monitors CPU and request latency to scale EC2 instances dynamically across Availability Zones.",
+        code: `# systemd service file: /etc/systemd/system/fastapi.service
+[Unit]
+Description=Gunicorn Uvicorn FastAPI Production Service
+After=network.target
+
+[Service]
+User=appuser
+Group=appuser
+WorkingDirectory=/var/www/app
+ExecStart=/var/www/app/venv/bin/gunicorn main:app \\
+  --workers 4 \\
+  --worker-class uvicorn.workers.UvicornWorker \\
+  --bind 0.0.0.0:8000 \\
+  --access-logfile /var/log/fastapi/access.log \\
+  --error-logfile /var/log/fastapi/error.log
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target`,
+        followUps: [
+          { q: "Why use Gunicorn with Uvicorn workers instead of running standalone Uvicorn?", a: "Gunicorn acts as a process manager, handling worker restarts, graceful reloads, and multi-core process distribution, while Uvicorn handles async ASGI protocol parsing within each worker." }
+        ]
+      },
+      {
+        id: "aws-162",
+        num: 162,
+        title: "What is an S3 bucket? How do you control access to objects?",
+        diff: "beginner",
+        priority: true,
+        spoken: "Amazon S3 is an object storage service providing 99.999999999% (11 9s) data durability for arbitrary files. We control access to objects using four layers: 1) S3 Block Public Access enabled by default, 2) IAM policies defining identity permissions, 3) S3 Bucket Policies defining resource-level access rules (such as enforcing TLS or restricting IP ranges), and 4) Presigned URLs, which allow frontend clients to securely upload or download private objects directly for a limited time window without exposing bucket credentials.",
+        code: `// Python (boto3) S3 Presigned URL for secure frontend file upload
+import boto3
+from botocore.config import Config
+
+s3_client = boto3.client(
+    's3', 
+    region_name='ap-south-1',
+    config=Config(signature_version='s3v4')
+)
+
+def generate_presigned_upload_url(bucket_name: str, object_key: str, expires_in: int = 300):
+    """Generates a temporary secure upload URL valid for 5 minutes."""
+    return s3_client.generate_presigned_url(
+        ClientMethod='put_object',
+        Params={
+            'Bucket': bucket_name,
+            'Key': object_key,
+            'ContentType': 'application/pdf'
+        },
+        ExpiresIn=expires_in
+    )`,
+        followUps: [
+          { q: "Why use presigned URLs instead of proxying file uploads through the backend API?", a: "Presigned URLs let clients upload directly to S3, eliminating memory bloat, high network bandwidth usage, and worker thread blocking on the backend API server." }
+        ]
+      },
+      {
+        id: "aws-163",
+        num: 163,
+        title: "Explain IAM users, roles, policies and least-privilege access",
+        diff: "intermediate",
+        priority: true,
+        spoken: "IAM Users represent long-lived identities for humans or legacy tools with credentials. IAM Roles are identities assumed temporarily by entities or AWS services (like EC2 or Lambda) using short-lived tokens via AWS STS, eliminating hardcoded access keys. IAM Policies are JSON documents defining explicit Allow or Deny permissions on actions and resources. Least-privilege access means granting only the absolute minimum permissions required to perform a specific task, scoping actions to specific resource ARNs rather than using wildcards.",
+        code: `{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowAppTicketAttachmentsOnly",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::production-ticket-attachments/attachments/*"
+    }
+  ]
+}`,
+        followUps: [
+          { q: "What takes precedence: an explicit Allow or an explicit Deny in an IAM Policy?", a: "An explicit Deny always overrides an explicit Allow." }
+        ]
+      },
+      {
+        id: "aws-164",
+        num: 164,
+        title: "What is a VPC? Explain public and private subnets, route tables and security groups",
+        diff: "advanced",
+        priority: true,
+        spoken: "An Amazon VPC (Virtual Private Cloud) is an isolated private network partition inside AWS. Subnets are IP address ranges within an Availability Zone. A Public Subnet has a Route Table entry directing 0.0.0.0/0 traffic to an Internet Gateway (IGW), hosting public-facing Application Load Balancers. A Private Subnet has no direct internet route; outbound internet traffic (for downloading dependencies) routes through a NAT Gateway located in a public subnet. Security Groups act as stateful firewalls around compute instances, allowing explicit inbound and outbound traffic.",
+        explanation: "Production 3-tier VPC architecture isolates components across multiple AZs: Public Subnets (ALB, NAT Gateways), Private App Subnets (FastAPI ECS/EC2 containers), and Isolated Database Subnets (RDS/MongoDB with zero internet routes).",
+        followUps: [
+          { q: "Can an EC2 instance in a private subnet receive direct incoming requests from the public internet?", a: "No. Without an Internet Gateway route and a public IP, outside traffic cannot reach private subnet instances directly; all traffic must pass through the public ALB." }
+        ]
+      },
+      {
+        id: "aws-165",
+        num: 165,
+        title: "What is the difference between a security group and a network ACL?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Security Groups are stateful virtual firewalls evaluated at the instance or network interface (ENI) level; if an inbound request is permitted, the outbound response is automatically allowed regardless of outbound rules. Network ACLs (NACLs) are stateless firewall barriers evaluated at the subnet boundary; they require explicit rules for both inbound and outbound ephemeral port traffic, and evaluate rules sequentially by rule number.",
+        table: {
+          headers: ["Attribute", "Security Group (SG)", "Network ACL (NACL)"],
+          rows: [
+            ["Scope", "Instance / Elastic Network Interface (ENI)", "Subnet boundary"],
+            ["State Handling", "Stateful (Return traffic automatically permitted)", "Stateless (Inbound and outbound rules evaluated separately)"],
+            ["Rule Types", "Allow rules only (Implicit deny all else)", "Allow and Deny rules supported"],
+            ["Rule Evaluation", "All rules evaluated as a single group", "Processed in strict numerical order (lowest number first)"]
+          ]
+        }
+      },
+      {
+        id: "aws-166",
+        num: 166,
+        title: "How do you securely store application secrets and database credentials?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Never store credentials in source code or unencrypted environment files. We use AWS Secrets Manager or AWS Systems Manager (SSM) Parameter Store with AWS KMS encryption. Secrets Manager is ideal for database credentials because it supports automatic credential rotation. In ECS or Lambda, we reference the secret ARN directly in task definitions; AWS decrypts and injects the credentials as environment variables into the container runtime in memory.",
+        code: `# Terraform / ECS Task Definition Secret Injection
+{
+  "name": "DATABASE_PASSWORD",
+  "valueFrom": "arn:aws:secretsmanager:ap-south-1:123456789012:secret:prod/db/credentials-XYZ:password::"
+}`,
+        followUps: [
+          { q: "What is the difference between SSM Parameter Store and Secrets Manager?", a: "Parameter Store is lower-cost and designed for general configuration strings; Secrets Manager costs $0.40/secret/month and includes native automatic password rotation for RDS." }
+        ]
+      },
+      {
+        id: "aws-167",
+        num: 167,
+        title: "What is RDS, and how would you connect a backend service to a private RDS instance?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Amazon RDS is a managed relational database service supporting PostgreSQL, MySQL, and Aurora with automated backups, patching, and Multi-AZ replication. In production, RDS is placed in an isolated private DB subnet with no public IP. The backend service running in an application private subnet connects to RDS through its private DNS endpoint, authorized via a Security Group rule that allows inbound port 5432 or 3306 exclusively from the backend application Security Group ID.",
+        code: `# Production Security Group Reference Pattern:
+# Inbound rule on RDS Security Group:
+Type: PostgreSQL
+Protocol: TCP
+Port Range: 5432
+Source: sg-0123456789abcdef0  <-- Backend App Security Group ID (NOT an IP range!)`,
+        followUps: [
+          { q: "Why use Security Group ID references instead of CIDR IP blocks?", a: "Referencing the App SG ID automatically allows new autoscaling container tasks or EC2 instances to connect without needing to update IP whitelist rules." }
+        ]
+      },
+      {
+        id: "aws-168",
+        num: 168,
+        title: "What are API Gateway and Lambda, and how can they work together?",
+        diff: "beginner",
+        priority: false,
+        spoken: "Amazon API Gateway is a fully managed service for creating, securing, and monitoring REST, HTTP, and WebSocket APIs at scale. It handles TLS termination, rate limiting, and CORS validation at the edge. API Gateway routes incoming HTTP requests to AWS Lambda, which runs the application code serverless-style and returns JSON responses back to API Gateway. This eliminates the need to manage web servers.",
+        code: `# Using Mangum to run a FastAPI app on AWS Lambda behind API Gateway
+from fastapi import FastAPI
+from mangum import Mangum
+
+app = FastAPI()
+
+@app.get("/api/v1/ping")
+def ping():
+    return {"status": "healthy", "runtime": "serverless-lambda"}
+
+# Handler configured as the Lambda entrypoint:
+handler = Mangum(app)`
+      },
+      {
+        id: "aws-169",
+        num: 169,
+        title: "How do CloudWatch metrics, logs, alarms and dashboards help with production monitoring?",
+        diff: "intermediate",
+        priority: false,
+        spoken: "CloudWatch provides full-stack observability. Metrics track time-series data like CPU utilization, 5xx error rates, and latency. Logs aggregate structured JSON logs from ECS containers, Lambda, and API Gateways. CloudWatch Alarms trigger automated notifications via SNS or initiate EC2 Auto Scaling when metrics cross critical thresholds (e.g., HTTP 5xx errors > 2% over 5 minutes). Dashboards unify these metrics and logs into a single view for quick operational visibility during outages.",
+        followUps: [
+          { q: "What is CloudWatch Metric Filters?", a: "A feature that scans log groups for specific error patterns (e.g., 'FATAL' or 'OutOfMemory') and converts their occurrence count into numerical CloudWatch metrics for alerting." }
+        ]
+      },
+      {
+        id: "aws-170",
+        num: 170,
+        title: "Explain SQS and SNS: Queue vs Pub/Sub Mechanics",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Amazon SQS is a pull-based point-to-point message queuing service where worker consumers poll messages, process them, and delete them from the queue. Amazon SNS is a push-based publish/subscribe service where a single message published to a topic is fanned out instantly to multiple subscribers (such as email, Lambda functions, or multiple SQS queues). We use SQS for task buffering and worker load leveling, and SNS when an event must trigger multiple independent downstream services simultaneously.",
+        table: {
+          headers: ["Attribute", "Amazon SQS (Queue)", "Amazon SNS (Topic Pub/Sub)"],
+          rows: [
+            ["Delivery Model", "Pull / Polling (Consumer requests messages)", "Push (SNS sends immediately to subscribers)"],
+            ["Consumers", "1-to-1 (One worker processes each message)", "1-to-Many (Fanout to multiple subscribers)"],
+            ["Message Durability", "Stored up to 14 days until explicitly deleted", "Ephemeral (Dropped if subscriber endpoints are unavailable)"],
+            ["Primary Use Case", "Decoupling background jobs, batch workers", "System-wide domain event broadcasting, alerts"]
+          ]
+        }
+      },
+      {
+        id: "aws-171",
+        num: 171,
+        title: "What is the difference between SQS Standard and FIFO queues?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "SQS Standard queues provide unlimited throughput with best-effort ordering and at-least-once delivery, meaning occasional duplicate messages can occur. SQS FIFO (First-In-First-Out) queues guarantee exact message ordering and exactly-once processing using Message Deduplication IDs and Message Group IDs, but are limited to 3,000 messages per second with batching (or 300 msg/s without).",
+        code: `# SQS FIFO Message Publishing with Deduplication & Grouping
+import boto3
+
+sqs = boto3.client('sqs')
+
+response = sqs.send_message(
+    QueueUrl='https://sqs.ap-south-1.amazonaws.com/123456789/Orders.fifo',
+    MessageBody='{"order_id": "ord_9941", "action": "PROCESS_PAYMENT"}',
+    MessageGroupId='customer_usr_101',      # Preserves strict order per customer
+    MessageDeduplicationId='pay_token_9941' # Prevents duplicate processing on retry
+)`,
+        followUps: [
+          { q: "How should workers handle duplicate messages on SQS Standard queues?", a: "Workers must implement application-level idempotency by storing processed message IDs in a database or Redis cache." }
+        ]
+      },
+      {
+        id: "aws-172",
+        num: 172,
+        title: "How do you design an application to tolerate an availability-zone failure?",
+        diff: "advanced",
+        priority: true,
+        spoken: "To tolerate an Availability Zone outage, we implement a Multi-AZ architecture: 1) Deploy the Application Load Balancer across at least two public subnets in different AZs. 2) Run compute containers (ECS/EC2) across private subnets in multiple AZs managed by an Auto Scaling group with a minimum capacity spread evenly. 3) Configure Amazon RDS in Multi-AZ mode with synchronous standby replication in a secondary AZ for automatic failover within 60 seconds. 4) Use managed regional services like S3 and SQS, which natively replicate data across multiple AZs under the hood.",
+        followUps: [
+          { q: "What happens to in-flight requests during an RDS Multi-AZ failover?", a: "In-flight transactions are aborted and rolled back. The application connection pool must catch the connection failure and reconnect to the same RDS DNS endpoint once DNS shifts to the standby node." }
+        ]
+      },
+      {
+        id: "aws-173",
+        num: 173,
+        title: "What is an Application Load Balancer, and how does it distribute traffic?",
+        diff: "intermediate",
+        priority: false,
+        spoken: "An Application Load Balancer operates at Layer 7 (Application Layer) of the OSI model. It inspects HTTP and HTTPS headers to route traffic to target groups based on routing rules: path-based routing (e.g., /api/* to FastAPI, /static/* to S3), host-based routing (app.domain.com vs admin.domain.com), or query string parameters. It continuously performs health checks on target containers or EC2 instances and uses the round-robin or least-outstanding-requests algorithms to distribute traffic only to healthy targets.",
+        followUps: [
+          { q: "What is the difference between an Application Load Balancer (ALB) and a Network Load Balancer (NLB)?", a: "ALB operates at Layer 7 with content-based routing and TLS termination; NLB operates at Layer 4 (TCP/UDP) with extreme low latency and millions of requests per second using static elastic IP addresses." }
+        ]
+      },
+      {
+        id: "aws-174",
+        num: 174,
+        title: "How do you reduce AWS costs without compromising reliability or security?",
+        diff: "advanced",
+        priority: true,
+        spoken: "We optimize AWS costs using a structured framework: 1) Compute: Use Compute Savings Plans or Reserved Instances for predictable baseline loads (saving up to 72%), adopt Graviton (ARM-based) instances for 20-40% better price-performance, and use Spot instances for non-critical asynchronous background workers. 2) Storage: Configure S3 Lifecycle policies to transition aged files to S3 Intelligent-Tiering, Glacier, or expire non-current object versions. 3) Network: Use VPC Endpoints for S3 and DynamoDB to avoid NAT Gateway data transfer fees, which cost $0.045/GB. 4) Hygiene: Set up AWS Cost Anomaly Detection to catch unexpected billing spikes early.",
+        table: {
+          headers: ["Optimization Area", "Immediate Architectural Action", "Potential Cost Savings"],
+          rows: [
+            ["Compute Instances", "Purchase 1-Year or 3-Year Compute Savings Plans", "30% - 60% savings"],
+            ["Processor Architecture", "Migrate x86 workloads to AWS Graviton (ARM64)", "~20% lower cost, ~19% better performance"],
+            ["Object Storage", "Implement S3 Lifecycle rules to Glacier Flexible Archive", "Up to 80% reduction in storage costs"],
+            ["NAT Gateway Traffic", "Add Gateway VPC Endpoints for internal S3/DynamoDB traffic", "Eliminates $0.045/GB NAT transfer charges"]
+          ]
+        }
+      }
+    ];
+
+    const State = {
+      theme: localStorage.getItem("fstk_theme") || "light",
+      completed: JSON.parse(localStorage.getItem("fstk_aws_completed") || "[]"),
+      bookmarked: JSON.parse(localStorage.getItem("fstk_aws_bookmarked") || "[]"),
+      revisionOnly: false,
+      filterDiff: "all",
+      filterStatus: "all",
+      searchQuery: ""
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(State.theme);
+      renderNavigation();
+      renderQuestions();
+      updateProgress();
+      bindEvents();
+    });
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fstk_theme", theme);
+      State.theme = theme;
+    }
+
+    function bindEvents() {
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        applyTheme(State.theme === "light" ? "dark" : "light");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+          e.preventDefault();
+          document.getElementById("global-search-input").focus();
+        }
+      });
+
+      document.getElementById("global-search-input").addEventListener("input", (e) => {
+        State.searchQuery = e.target.value.toLowerCase().trim();
+        renderQuestions();
+      });
+
+      document.getElementById("filter-difficulty").addEventListener("change", (e) => {
+        State.filterDiff = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("filter-status").addEventListener("change", (e) => {
+        State.filterStatus = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("revision-mode-toggle").addEventListener("click", (e) => {
+        State.revisionOnly = !State.revisionOnly;
+        e.currentTarget.classList.toggle("btn-primary", State.revisionOnly);
+        renderQuestions();
+      });
+
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("mobile-menu-toggle").addEventListener("click", () => sidebar.classList.toggle("open"));
+      document.getElementById("sidebar-close-btn").addEventListener("click", () => sidebar.classList.remove("open"));
+    }
+
+    function renderNavigation() {
+      const container = document.getElementById("sidebar-nav-container");
+      container.innerHTML = '<div class="nav-section-title">All 16 AWS Questions</div>';
+
+      AWS_QUESTIONS.forEach(q => {
+        const item = document.createElement("a");
+        item.className = "nav-item";
+        item.href = `#${q.id}`;
+        item.innerHTML = `
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">${q.num}. ${q.title}</span>
+          <span id="badge-${q.id}" class="nav-badge">${State.completed.includes(q.id) ? '✓' : ''}</span>
+        `;
+        item.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById("sidebar").classList.remove("open");
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuestions() {
+      const target = document.getElementById("questions-render-target");
+      const rail = document.getElementById("rail-topic-outline");
+      target.innerHTML = "";
+      rail.innerHTML = "";
+
+      let filtered = AWS_QUESTIONS.filter(q => {
+        if (State.revisionOnly && !q.priority) return false;
+        if (State.filterDiff !== "all" && q.diff !== State.filterDiff) return false;
+
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        if (State.filterStatus === "completed" && !isDone) return false;
+        if (State.filterStatus === "incomplete" && isDone) return false;
+        if (State.filterStatus === "bookmarked" && !isMarked) return false;
+
+        if (State.searchQuery) {
+          const matchTitle = q.title.toLowerCase().includes(State.searchQuery);
+          const matchSpoken = q.spoken.toLowerCase().includes(State.searchQuery);
+          const matchCode = q.code && q.code.toLowerCase().includes(State.searchQuery);
+          if (!matchTitle && !matchSpoken && !matchCode) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById("results-count-text").innerText = `Showing ${filtered.length} of ${AWS_QUESTIONS.length} questions`;
+
+      if (filtered.length === 0) {
+        target.innerHTML = `
+          <div class="view-card" style="text-align:center; padding:3rem;">
+            <p style="color:var(--text-muted);">No questions match your current search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(q => {
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        const railLink = document.createElement("a");
+        railLink.href = `#${q.id}`;
+        railLink.style.cssText = "color:var(--text-muted); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;";
+        railLink.innerText = `${q.num}. ${q.title}`;
+        rail.appendChild(railLink);
+
+        const card = document.createElement("article");
+        card.className = "view-card";
+        card.id = q.id;
+
+        card.innerHTML = `
+          <div class="q-meta">
+            <span class="tag tag-diff-${q.diff}">${q.diff}</span>
+            <span class="tag tag-topic">Question ${q.num}</span>
+            ${q.priority ? '<span class="tag" style="background:#EEF2FF; color:#4568E8;">★ High Priority</span>' : ''}
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">Target: 60-90s spoken</span>
+          </div>
+
+          <h2 class="q-title">${q.num}. ${q.title}</h2>
+
+          <div class="q-section-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Interview-Ready Spoken Answer
+          </div>
+          <div class="callout-box">
+            <p><strong>"${escapeHTML(q.spoken)}"</strong></p>
+          </div>
+
+          ${q.explanation ? `
+            <div class="q-section-heading">Cloud Architecture Deep-Dive</div>
+            <p style="font-size:0.93rem; color:var(--text-main); margin-bottom:1rem;">${escapeHTML(q.explanation)}</p>
+          ` : ''}
+
+          ${q.table ? `
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>${q.table.headers.map(h => `<th>${escapeHTML(h)}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${q.table.rows.map(r => `<tr>${r.map(c => `<td>${escapeHTML(c)}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          ${q.code ? `
+            <div class="code-container">
+              <div class="code-header">
+                <span>Production AWS Configuration / Code</span>
+                <button class="btn btn-ghost" style="color:#FFF; padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="copyCode(this)">Copy Snippet</button>
+              </div>
+              <pre><code>${escapeHTML(q.code)}</code></pre>
+            </div>
+          ` : ''}
+
+          ${q.followUps && q.followUps.length > 0 ? `
+            <div class="q-section-heading">Likely Interviewer Follow-Ups</div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+              ${q.followUps.map(f => `
+                <div style="background:var(--bg-primary); padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.875rem;">
+                  <strong style="color:var(--text-main); display:block; margin-bottom:0.25rem;">Q: ${escapeHTML(f.q)}</strong>
+                  <span style="color:var(--text-muted);">A: ${escapeHTML(f.a)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="btn-action-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn ${isDone ? 'btn-primary' : ''}" onclick="toggleCompleted('${q.id}')">
+                ${isDone ? '✓ Completed' : 'Mark as Completed'}
+              </button>
+              <button class="btn" onclick="toggleBookmarked('${q.id}')">
+                ${isMarked ? '★ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ID: <code>${q.id}</code>
+            </div>
+          </div>
+        `;
+
+        target.appendChild(card);
+      });
+    }
+
+    function toggleCompleted(id) {
+      if (State.completed.includes(id)) {
+        State.completed = State.completed.filter(x => x !== id);
+      } else {
+        State.completed.push(id);
+      }
+      localStorage.setItem("fstk_aws_completed", JSON.stringify(State.completed));
+      updateProgress();
+      renderQuestions();
+      renderNavigation();
+    }
+
+    function toggleBookmarked(id) {
+      if (State.bookmarked.includes(id)) {
+        State.bookmarked = State.bookmarked.filter(x => x !== id);
+      } else {
+        State.bookmarked.push(id);
+      }
+      localStorage.setItem("fstk_aws_bookmarked", JSON.stringify(State.bookmarked));
+      renderQuestions();
+    }
+
+    function copyCode(btn) {
+      const code = btn.closest(".code-container").querySelector("code").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy Snippet", 2000);
+      });
+    }
+
+    function updateProgress() {
+      const total = AWS_QUESTIONS.length;
+      const done = State.completed.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("section-progress-bar").style.width = `${pct}%`;
+      document.getElementById("section-progress-label").innerText = `${done}/${total} (${pct}%)`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

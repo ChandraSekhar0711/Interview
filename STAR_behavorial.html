@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section J: Project Deep-Dive & Behavioral (STAR) — Complete 5 YOE Full-Stack Guide</title>
+  <style>
+    :root {
+      --bg-primary: #F6F8FC;
+      --surface: #FFFFFF;
+      --sidebar-bg: #17243A;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #172033;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --warning-bg: #FFF7E6;
+      --warning-text: #B45309;
+      --success-bg: #EAF8F0;
+      --success-text: #0F766E;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #64748B;
+      --sidebar-active: #F8FAFC;
+      --primary: #6384F9;
+      --primary-hover: #4568E8;
+      --secondary: #14B8A6;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #1E293B;
+      --code-bg: #050811;
+      --code-text: #F8FAFC;
+      --warning-bg: #2C1E04;
+      --warning-text: #FBBF24;
+      --success-bg: #062D24;
+      --success-text: #34D399;
+      --danger-bg: #361010;
+      --danger-text: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; }
+
+    #sidebar { width: 330px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.25s ease; border-right: 1px solid var(--border); }
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    #content-area { flex: 1; display: flex; overflow-y: auto; scroll-behavior: smooth; }
+    #content-stage { flex: 1; padding: 2rem 3rem; max-width: 1080px; margin: 0 auto; width: 100%; }
+    #context-rail { width: 280px; padding: 1.75rem 1.25rem; border-left: 1px solid var(--border); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+
+    header.top-bar { background: var(--surface); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; flex-shrink: 0; z-index: 30; }
+    .search-wrapper { position: relative; width: 440px; }
+    .search-input { width: 100%; padding: 0.5rem 2.2rem 0.5rem 2.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-main); font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(69, 104, 232, 0.2); }
+    .search-kbd { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; padding: 0.15rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono); }
+    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-muted); fill: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); transition: all 0.15s; }
+    .btn:hover { background: var(--bg-primary); }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-ghost { background: transparent; border-color: transparent; }
+
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .view-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); scroll-margin-top: 1.5rem; }
+    .q-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-diff-intermediate { background: var(--warning-bg); color: var(--warning-text); }
+    .tag-diff-advanced { background: var(--danger-bg); color: var(--danger-text); }
+    .tag-topic { background: var(--bg-primary); color: var(--text-muted); border: 1px solid var(--border); }
+    
+    .q-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.35; }
+    .q-section-heading { font-size: 0.88rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .callout-box { background: var(--bg-primary); border-left: 4px solid var(--primary); padding: 1.1rem 1.3rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 0.75rem 0 1.25rem; font-size: 0.95rem; }
+    .callout-box p { margin-bottom: 0.5rem; }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .star-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin: 1rem 0; }
+    .star-step { background: var(--bg-primary); border: 1px solid var(--border); border-radius: var(--radius); padding: 0.9rem 1.1rem; }
+    .star-step strong { display: inline-block; color: var(--primary); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.25rem; }
+
+    .table-container { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left; }
+    th { background: var(--bg-primary); padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .mobile-menu-btn { display: none; }
+    @media (max-width: 1024px) {
+      #context-rail { display: none; }
+      #content-stage { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-menu-btn { display: inline-flex; }
+      .search-wrapper { width: 180px; }
+      #content-stage { padding: 1rem; }
+    }
+
+    @media print {
+      body { height: auto; overflow: visible; background: #FFF; color: #000; }
+      #sidebar, header.top-bar, #context-rail, .interactive-toolbar, .btn-action-group { display: none !important; }
+      #main-container, #content-area, #content-stage { overflow: visible !important; width: 100% !important; padding: 0 !important; }
+      .view-card { border: none !important; box-shadow: none !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Prep</span>
+      </div>
+      <button class="btn btn-ghost" id="sidebar-close-btn" style="color:#FFF; display:none;">✕</button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>Behavioral (STAR) Progress</span>
+        <span id="section-progress-label">0/15 (0%)</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="section-progress-bar" style="width:0%; height:100%; background:var(--primary); transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Jump to Question</div>
+      <!-- Injected via JS -->
+    </nav>
+  </aside>
+
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="global-search-input" class="search-input" placeholder="Search STAR stories, architecture disputes, mentoring..." autocomplete="off">
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="revision-mode-toggle" title="Show High Priority Questions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Revision Filter</span>
+        </button>
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn" onclick="window.print()" title="Print Section">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="content-area">
+      <div id="content-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">Section J: Project Deep-Dive & Behavioral Questions (STAR)</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Exhaustive, interview-ready guide covering all 15 core leadership, project ownership, and behavioral questions (numbered 1 through 15) for 5-YOE Full Stack Developers. Structured around the Situation, Task, Action, and Result (STAR) framework with adaptable project templates, realistic metrics, and conflict management patterns.</p>
+        </div>
+
+        <div class="interactive-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <select id="filter-difficulty" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Difficulties</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select id="filter-status" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Questions</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+              <option value="bookmarked">Bookmarked</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);" id="results-count-text">Showing 15 of 15 questions</div>
+        </div>
+
+        <div id="questions-render-target"></div>
+      </div>
+
+      <aside id="context-rail">
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.75rem;">
+          Table of Contents
+        </div>
+        <div id="rail-topic-outline" style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.83rem;"></div>
+
+        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;">
+            5-YOE Senior Behavioral Rule
+          </div>
+          <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">
+            Avoid spending 80% of your time describing the Situation. Spend <strong>15% on Situation/Task</strong>, <strong>65% on concrete Action</strong> (what <em>you</em> personally designed, measured, coded, or mediated), and <strong>20% on Result</strong> (quantified metrics and business value).
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const BEHAVIORAL_QUESTIONS = [
+      {
+        id: "bh-01",
+        num: 1,
+        title: "Walk through a full-stack application from requirements to deployment",
+        diff: "intermediate",
+        priority: true,
+        spoken: "In my recent enterprise engagement, I led the technical execution of a distributed ticket-management platform for enterprise support teams. I translated business SLAs into technical contracts using OpenAPI, designed asynchronous FastAPI endpoints, established an ESR-indexed MongoDB document schema, and built a responsive React frontend with optimistic UI updates. I automated our testing gates in GitHub Actions and deployed the containerized service to AWS ECS Fargate behind an Application Load Balancer, reducing ticket resolution turnaround times significantly.",
+        star: {
+          situation: "Our internal support and operational teams were bogged down by a legacy monolithic tracker that suffered from 5-second page loads, frequent data contention, and an inability to handle automated webhook events from partners.",
+          task: "As the full-stack engineer on the initiative, I was responsible for architecting, building, and deploying an asynchronous ticketing platform capable of sustaining 2,000 concurrent agents with sub-250ms API response times.",
+          action: "I established API specifications using Pydantic and OpenAPI before writing code. I built the backend in FastAPI to leverage non-blocking async I/O with Motor for MongoDB, implemented compound indexes adhering to the ESR rule ({ team_id: 1, status: 1, created_at: -1 }), offloaded file attachments to S3 presigned URLs, and built the frontend in React with debounced search and windowed virtualization. I packaged the application via multi-stage Docker builds and automated zero-downtime rolling deployments on AWS ECS Fargate.",
+          result: "The platform dropped median page latency from 5.2s to 180ms, handled a 4x increase in concurrent ticket ingestion without error, and eliminated attachment upload failures across all regional teams."
+        },
+        followUps: [
+          { q: "What was the most difficult architectural trade-off on that project?", a: "Choosing between embedding comments inside the ticket document versus referencing a separate comments collection; referencing was chosen to prevent hitting the 16MB BSON limit for long-lived enterprise tickets." }
+        ]
+      },
+      {
+        id: "bh-02",
+        num: 2,
+        title: "Explain personal module ownership versus team responsibilities",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Module ownership means being the technical steward of a subsystem: establishing architectural boundaries, enforcing test coverage, maintaining documentation, and monitoring its health in production. However, ownership does not mean creating an isolated knowledge silo. Team responsibility means writing clean, self-documenting code, conducting thorough code reviews, and holding knowledge-transfer sessions so any team member can step in, triage bugs, or deploy the service during on-call rotations.",
+        star: {
+          situation: "Our team was refactoring our core authentication and notification subsystems, but knowledge of the message dispatching module was concentrated in a single senior engineer who was departing.",
+          task: "I stepped up to take technical ownership of the notification and async worker pipeline, with the explicit goal of democratizing maintenance and removing knowledge silos across the remaining five developers.",
+          action: "I documented the SQS retry dead-letter workflows, unified worker logging with correlation IDs, created runbooks for common operational failures, and paired with junior developers during PR reviews to walk through edge-case recovery paths.",
+          result: "On-call engineers were able to diagnose and remediate 100% of notification alerts without escalations, and the team onboarded two new developers who deployed enhancements within their first sprint."
+        }
+      },
+      {
+        id: "bh-03",
+        num: 3,
+        title: "Describe a difficult bug and how you diagnosed it",
+        diff: "advanced",
+        priority: true,
+        spoken: "We faced an intermittent production bug where our FastAPI service would freeze and trigger ALB 504 Gateway Timeouts during peak afternoon traffic, but CPU and memory remained below 30%. I suspected event-loop blocking rather than infrastructure saturation. Using py-spy to capture on-cpu and off-cpu thread dumps on a staging replica under simulated load, I discovered that an analytics tracking helper inside an 'async def' route was making a synchronous HTTP call using the standard requests library. The blocking call halted the single-threaded asyncio event loop for up to 3 seconds per request. Replacing it with httpx.AsyncClient resolved the timeouts completely.",
+        star: {
+          situation: "Intermittent 504 Gateway Timeouts began impacting 2% of users during peak traffic hours, but server resource graphs in CloudWatch showed plenty of spare CPU and RAM.",
+          task: "I was assigned to find the root cause of the socket timeouts without disrupting live production traffic.",
+          action: "I inspected distributed traces in AWS X-Ray and noticed that request latency was stalling inside a helper function. I attached py-spy to a staging instance running identical load and generated flame graphs, which revealed that an un-awaited synchronous `requests.post()` call was executing inside an `async def` path operation, blocking the event loop thread.",
+          result: "I replaced the blocking network client with non-blocking `httpx.AsyncClient` and added an automated linter rule in CI to flag synchronous I/O libraries inside async functions, dropping p99 latency back under 120ms."
+        }
+      },
+      {
+        id: "bh-04",
+        num: 4,
+        title: "Explain a performance improvement and how it was measured",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Our customer-facing dashboard table in React was experiencing noticeable UI freezes (Total Blocking Time > 1,200ms) when rendering 2,000+ orders, causing user complaints. I approached the problem by establishing measurable baselines using the Chrome DevTools Performance panel and Lighthouse. I identified two culprits: 1) Thousands of un-virtualized DOM elements were being rendered simultaneously, and 2) The parent table was re-rendering all rows on every keystroke in the search bar. I introduced `react-window` for DOM virtualization and wrapped row cells in `React.memo` with stabilized `useCallback` handlers.",
+        star: {
+          situation: "Users reported noticeable stutter and input lag when scrolling through large order lists on our React web portal.",
+          task: "Improve frontend rendering performance and reduce Total Blocking Time below 200ms without stripping table sorting or filtering features.",
+          action: "I benchmarked the component using Chrome Performance Profiler, noting a 1,400ms scripting task on mount. I replaced the raw table body with `react-window` to limit rendered DOM elements to the visible viewport (plus a 5-item buffer), stabilized event handlers with `useCallback`, and debounced the filter input by 300ms.",
+          result: "Total Blocking Time dropped from 1,400ms to 45ms, initial render dropped from 1.8s to sub-100ms, and Lighthouse Performance scores improved from 48 to 94 on mid-tier mobile test profiles."
+        }
+      },
+      {
+        id: "bh-05",
+        num: 5,
+        title: "Describe a design decision and its trade-offs",
+        diff: "advanced",
+        priority: true,
+        spoken: "When designing our document storage layer, the team debated whether to store file attachments directly as base64 strings in MongoDB BSON documents or offload them to Amazon S3 and store object references in the database. Storing files in MongoDB would have made transactions atomic and simplified backups, but would have bloated our WiredTiger memory working set and risked hitting the 16MB BSON document limit. I advocated for storing files in Amazon S3 using presigned URLs and maintaining metadata references in MongoDB. The trade-off was accepting eventual consistency between S3 and MongoDB, but it kept our database fast and memory-efficient.",
+        star: {
+          situation: "Our support platform needed to support file attachments up to 25MB for bug reports, logs, and screenshots.",
+          task: "Evaluate storage alternatives and decide on an architecture balancing cost, performance, and operational complexity.",
+          action: "I calculated the impact on MongoDB's working set in RAM: storing 25MB documents would evict hot index pages, causing severe disk read spikes. I proposed an S3-backed architecture with a 2-phase upload commit: 1) Client requests a presigned URL, 2) Client uploads to S3, and 3) Client notifies FastAPI to save metadata only upon S3 200 OK. If the metadata write fails, an S3 lifecycle rule auto-deletes unreferenced objects after 24 hours.",
+          result: "MongoDB RAM utilization remained stable below 40%, API containers never buffered large binaries in memory, and storage costs were reduced by 85% by leveraging S3 Standard and Glacier lifecycle tiers."
+        }
+      },
+      {
+        id: "bh-06",
+        num: 6,
+        title: "Explain your code-review process",
+        diff: "intermediate",
+        priority: false,
+        spoken: "I treat code reviews as an opportunity to ensure quality, security, and team alignment rather than catching formatting errors, which should be automated by linters. My process follows three tiers: 1) Architecture and correctness: Does this meet the business requirements? Are there race conditions, unhandled exceptions, or N+1 query patterns? 2) Operational readiness: Are there structured logs, metrics, correlation IDs, and tests for happy and failure paths? 3) Security: Are inputs validated via Pydantic? Is there BOLA risk or raw SQL/NoSQL injection? When offering feedback, I explain the 'why' behind suggestions and differentiate between blocking security/correctness concerns and non-blocking nitpicks.",
+        star: {
+          situation: "Our team's PR turnaround time was slow, and code reviews often devolved into subjective arguments over code formatting.",
+          task: "Streamline the review process, reduce review fatigue, and improve code review rigor across the engineering squad.",
+          action: "I integrated Ruff, Black, and ESLint into our GitHub Actions pre-commit gates to automate all formatting checks. I established a standardized PR template requiring a description of changes, test coverage proofs, and architectural considerations, and trained developers to label non-essential suggestions with 'Nit:'.",
+          result: "Average PR cycle time decreased from 42 hours to 16 hours, while catch rates for architectural bugs and missing database indexes increased before reaching staging."
+        }
+      },
+      {
+        id: "bh-07",
+        num: 7,
+        title: "Estimate work when requirements are incomplete",
+        diff: "intermediate",
+        priority: false,
+        spoken: "When requirements are vague, providing a single estimate is dangerous. I break the task down using an assumption-driven, phased approach: 1) I define explicit assumptions in writing (e.g., 'Assuming third-party auth provider handles token refresh'). 2) I propose a time-boxed spike (1–2 days) to explore unknown technical interfaces or third-party APIs. 3) I provide a range estimate (Best-case, Expected, Worst-case) tied directly to those assumptions. 4) I slice the deliverable into an MVP followed by iterative enhancements, ensuring the business gets working software early while scope clarifies.",
+        star: {
+          situation: "Product stakeholders requested a real-time collaborative editing feature for support tickets, but external integration specifications and concurrent conflict rules were completely undefined.",
+          task: "Provide a delivery timeline for engineering leadership without committing to unrealistic deadlines on ambiguous scope.",
+          action: "I organized a 2-day discovery spike to evaluate WebSockets vs Server-Sent Events, identified that optimistic locking with clear collision notices would satisfy 95% of business needs, and presented a two-phase estimate: Phase 1 (MVP ticket lock indicator, 2 sprints) and Phase 2 (full operational conflict resolution, 3 sprints).",
+          result: "We delivered Phase 1 ahead of schedule, validating user demand with minimal engineering investment before committing resources to the more complex Phase 2."
+        }
+      },
+      {
+        id: "bh-08",
+        num: 8,
+        title: "Handle a failed production deployment under pressure",
+        diff: "advanced",
+        priority: true,
+        spoken: "Under production pressure, priority number one is restoring service for users, not debugging. When an alert flags elevated 5xx errors or latency spikes after a deployment: 1) Mitigate immediately: Trigger an instant rollback to the previous stable container task definition or flip the load balancer back to the Blue environment. 2) Communicate: Update stakeholders on the incident channel with a brief status update: symptom, current action, and expected recovery window. 3) Verify: Confirm via CloudWatch alarms and synthetic checks that error rates have returned to baseline. 4) Investigate in isolation: Pull logs and metrics from the failed deployment container to diagnose root cause in staging, avoiding rushed hotfixes directly in production.",
+        star: {
+          situation: "Following a scheduled release of our payments service, synthetic monitoring fired P1 alerts indicating a spike in 502 Bad Gateway errors within three minutes of deployment.",
+          task: "As the primary deployer on-call, I needed to restore payment processing immediately while minimizing business disruption.",
+          action: "I resisted the urge to push a quick patch. Instead, I immediately executed our automated ECS service rollback to the prior task revision (`rev-48`), verified traffic stabilized within 90 seconds, and posted an incident update to our status channel. Once recovered, I pulled container logs in CloudWatch and found a missing environment variable in the new task definition that caused containers to crash on boot.",
+          result: "Total customer-facing downtime was limited to under 4 minutes, zero payments were lost, and we updated our Terraform deployment pipeline to enforce environment variable validation during pre-flight checks."
+        }
+      },
+      {
+        id: "bh-09",
+        num: 9,
+        title: "Communicate technical risks to nontechnical stakeholders",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Non-technical stakeholders care about business outcomes: revenue, reliability, compliance, and user retention. I never communicate risks using low-level jargon like 'WiredTiger cache pressure' or 'monolithic thread deadlocks.' Instead, I translate technical debt into business impact: 'If we do not allocate one sprint to database indexing and connection pooling, our checkout page will crash when traffic doubles on Black Friday, resulting in lost revenue.' Framing technical decisions in terms of risk vs reward, cost, and timelines builds trust and secures alignment.",
+        star: {
+          situation: "Product management wanted to bypass building an asynchronous message queue for email dispatches to ship an onboarding feature two weeks earlier.",
+          task: "Explain the technical risk of synchronous SMTP calls to product managers without sounding like an engineering roadblock.",
+          action: "I modeled the failure scenario using business numbers: 'Sending emails synchronously inside the web request adds 2 seconds of delay to every signup. If the third-party email provider experiences a 30-second hiccup, our registration page will time out, causing new users to abandon onboarding.' I then proposed a pragmatic compromise: an MVP using lightweight background tasks, followed by a dedicated SQS queue in the next sprint.",
+          result: "Stakeholders appreciated the risk framing and approved the phased architecture, which saved our registration funnel when the email API had an outage two weeks post-launch."
+        }
+      },
+      {
+        id: "bh-10",
+        num: 10,
+        title: "Maintain quality under tight deadlines",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Maintaining quality under tight deadlines means being disciplined about what can be cut. You cut scope, never engineering fundamentals. I will negotiate to defer secondary features, simplify UI animations, or postpone edge-case automations, but I will never skip automated testing, security validation, or CI linting. Cutting fundamentals creates technical debt that will cause production incidents, ending up costing more time than was saved.",
+        star: {
+          situation: "Our team was given an aggressive 3-week deadline to deliver a partner-facing reporting dashboard ahead of an executive demo.",
+          task: "Deliver a high-quality, reliable reporting module on time without sacrificing security or system stability.",
+          action: "I worked with the product owner to trim non-essential requirements: we replaced custom ad-hoc filtering with three preset report views, and deferred automated Excel export in favor of standard CSV downloads. This reduced scope by 40% while allowing us to write unit tests, enforce Pydantic validation, and review every PR thoroughly.",
+          result: "We delivered the core feature two days before the deadline with zero critical bugs during the executive presentation, and built the deferred features cleanly in subsequent iterations."
+        }
+      },
+      {
+        id: "bh-11",
+        num: 11,
+        title: "Mentor junior developers",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Mentorship is about building independent problem-solvers, not giving quick answers. When junior developers ask for help, I ask guiding questions to help them reason through the issue: 'What does the stack trace tell us? Where did the data change state? What does the network tab show?' I encourage pair programming on difficult bugs, share debugging methodologies (like binary search debugging and reading logs), review their PRs with detailed explanations, and create opportunities for them to own meaningful modules end-to-end.",
+        star: {
+          situation: "A junior full-stack developer on our team was struggling with asynchronous state updates in React, frequently introducing stale closure bugs.",
+          task: "Help the developer understand React rendering mechanics deeply so they could build features independently without recurring regressions.",
+          action: "I scheduled weekly 1-on-1 pairing sessions. Rather than fixing their code, I walked them through the React reconciliation lifecycle using visual diagrams, demonstrated how functional updates work inside `setState(prev => ...)`, and reviewed their PRs with supportive, actionable feedback.",
+          result: "The developer's bug rate dropped noticeably over two months, and they independently designed and delivered a complex multi-step onboarding wizard that passed code review on the first iteration."
+        }
+      },
+      {
+        id: "bh-12",
+        num: 12,
+        title: "Handle disagreement about architecture",
+        diff: "advanced",
+        priority: true,
+        spoken: "Disagreements about architecture are healthy when focused on technical merits rather than ego. When disagreements arise: 1) Ground the discussion in requirements: What are our latency SLAs, data access patterns, and team maintenance capabilities? 2) Build a prototype: Run a quick time-boxed spike or benchmark to test competing approaches with real data. 3) Document trade-offs in an Architecture Decision Record (ADR). 4) Commit fully: Practice Amazon's 'Disagree and Commit' principle. Once a decision is made by the team or tech lead, support the chosen architecture 100% without second-guessing.",
+        star: {
+          situation: "During the redesign of our order management pipeline, two senior engineers were locked in an argument: one wanted an event-driven Kafka stream, while the other wanted an SQS queue with synchronous REST fallbacks.",
+          task: "Resolve the technical deadlock so the team could proceed with development without damaging team relationships.",
+          action: "I facilitated an evaluation session centered on an Architecture Decision Record (ADR). I listed our concrete operational constraints: our team lacked dedicated platform engineers to manage Kafka cluster ZooKeeper/KRaft nodes, and our throughput was ~300 orders/sec—well within SQS's managed capabilities. I demonstrated that SQS FIFO provided the necessary ordering guarantees with zero maintenance overhead.",
+          result: "The team agreed on the SQS approach, documented the decision in our repo, and delivered the pipeline three weeks ahead of schedule with minimal maintenance burden."
+        }
+      },
+      {
+        id: "bh-13",
+        num: 13,
+        title: "Decide whether to refactor or introduce a new service",
+        diff: "advanced",
+        priority: true,
+        spoken: "Introducing a new microservice brings distributed operational overhead: network latency, distributed transactions, independent CI/CD pipelines, and observability complexity. My default is to refactor within the existing application by creating modular, well-encapsulated domain boundaries (a modular monolith). I only split into a new service when: 1) There is a distinct difference in scaling or resource requirements (e.g., CPU-heavy image processing vs I/O-heavy CRUD APIs), 2) Different release cadences and independent deployment boundaries are strictly required by different teams, or 3) Strict security isolation is necessary (e.g., isolating PCI-DSS payment data).",
+        star: {
+          situation: "A team member proposed spinning up a new microservice for our application's PDF invoice generation, which was causing occasional memory spikes in our main FastAPI web API.",
+          task: "Evaluate whether creating a dedicated microservice was justified or if internal refactoring was the cleaner solution.",
+          action: "I analyzed the operational costs: a separate service would require new IAM roles, an ECR repository, CI/CD pipelines, and DNS routing. Instead, I proposed refactoring the PDF generation into an asynchronous Celery worker running in a separate ECS worker container using the exact same codebase, decoupled via our existing Redis broker.",
+          result: "We isolated the memory spikes from our user-facing web API, avoided the overhead of managing a new repository and deployment pipeline, and completed the work in 3 days instead of 3 weeks."
+        }
+      },
+      {
+        id: "bh-14",
+        num: 14,
+        title: "Describe a feature delivered end-to-end",
+        diff: "intermediate",
+        priority: false,
+        spoken: "In my recent role, I owned the delivery of our real-time notification engine from initial requirements through production rollout. I worked with product managers to define delivery channels and user preferences, built the backend pipeline in FastAPI using Amazon SQS and background workers, designed an index-optimized MongoDB collection for user notification state, and developed the React UI notification center with optimistic read states and badge counters. The feature was delivered on time and handled over 500,000 daily alerts with 99.98% delivery success.",
+        star: {
+          situation: "Users were missing important ticket status updates and approval requests because our application relied solely on batch email notifications.",
+          task: "Design, build, and deploy an in-app real-time notification feed alongside email digests, complete with user preference controls.",
+          action: "I modeled the notification BSON schema with TTL indexes for 30-day retention, wrote async FastAPI endpoints for polling and mark-as-read updates, implemented an SQS worker queue for reliable delivery, and built an accessible React notification bell component with dropdown feeds and unread count badges.",
+          result: "User engagement with critical ticket actions increased by 35%, ticket resolution turnaround times improved by 18%, and the notification system ran reliably with zero production downtime."
+        }
+      },
+      {
+        id: "bh-15",
+        num: 15,
+        title: "Explain what you would improve in an application's architecture",
+        diff: "advanced",
+        priority: true,
+        spoken: "A strong senior engineer recognizes that architecture is an ongoing evolution of trade-offs. In my previous full-stack project, our greatest technical debt was distributed across two areas: 1) Frontend-backend contract drift, caused by manually writing TypeScript interfaces that occasionally fell out of sync with FastAPI Pydantic schemas. I would automate this by generating TypeScript client SDKs directly from the backend's OpenAPI JSON in CI. 2) Database read-replica utilization: As analytics reporting grew, heavy aggregations ran against our Primary MongoDB replica, competing with write throughput. I would route all reporting queries to dedicated read-only Secondaries using MongoDB Read Preferences (`readPreference=secondaryPreferred`) and introduce an ElastiCache Redis layer for frequently accessed dashboard metrics.",
+        star: {
+          situation: "Our production platform experienced periodic read slowdowns when operational managers generated monthly analytics reports.",
+          task: "Identify architectural bottlenecks and formulate an actionable modernization roadmap.",
+          action: "I profiled our query distribution and found that 60% of our database IOPS were consumed by read-only reporting queries hitting the primary MongoDB node. I drafted an Architecture Improvement Proposal outlining: 1) Updating our Motor connection string to route analytical reads to replica secondaries, 2) Adding Redis for 10-minute caching on top dashboard tiles, and 3) Automating frontend type generation via `openapi-typescript` in our CI pipeline.",
+          result: "Engineering leadership approved the proposal; implementing secondary read routing dropped primary database CPU from 78% to 28% during end-of-month reporting peaks."
+        }
+      }
+    ];
+
+    const State = {
+      theme: localStorage.getItem("fstk_theme") || "light",
+      completed: JSON.parse(localStorage.getItem("fstk_bh_completed") || "[]"),
+      bookmarked: JSON.parse(localStorage.getItem("fstk_bh_bookmarked") || "[]"),
+      revisionOnly: false,
+      filterDiff: "all",
+      filterStatus: "all",
+      searchQuery: ""
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(State.theme);
+      renderNavigation();
+      renderQuestions();
+      updateProgress();
+      bindEvents();
+    });
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fstk_theme", theme);
+      State.theme = theme;
+    }
+
+    function bindEvents() {
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        applyTheme(State.theme === "light" ? "dark" : "light");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+          e.preventDefault();
+          document.getElementById("global-search-input").focus();
+        }
+      });
+
+      document.getElementById("global-search-input").addEventListener("input", (e) => {
+        State.searchQuery = e.target.value.toLowerCase().trim();
+        renderQuestions();
+      });
+
+      document.getElementById("filter-difficulty").addEventListener("change", (e) => {
+        State.filterDiff = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("filter-status").addEventListener("change", (e) => {
+        State.filterStatus = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("revision-mode-toggle").addEventListener("click", (e) => {
+        State.revisionOnly = !State.revisionOnly;
+        e.currentTarget.classList.toggle("btn-primary", State.revisionOnly);
+        renderQuestions();
+      });
+
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("mobile-menu-toggle").addEventListener("click", () => sidebar.classList.toggle("open"));
+      document.getElementById("sidebar-close-btn").addEventListener("click", () => sidebar.classList.remove("open"));
+    }
+
+    function renderNavigation() {
+      const container = document.getElementById("sidebar-nav-container");
+      container.innerHTML = '<div class="nav-section-title">All 15 Behavioral Questions</div>';
+
+      BEHAVIORAL_QUESTIONS.forEach(q => {
+        const item = document.createElement("a");
+        item.className = "nav-item";
+        item.href = `#${q.id}`;
+        item.innerHTML = `
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">${q.num}. ${q.title}</span>
+          <span id="badge-${q.id}" class="nav-badge">${State.completed.includes(q.id) ? '✓' : ''}</span>
+        `;
+        item.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById("sidebar").classList.remove("open");
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuestions() {
+      const target = document.getElementById("questions-render-target");
+      const rail = document.getElementById("rail-topic-outline");
+      target.innerHTML = "";
+      rail.innerHTML = "";
+
+      let filtered = BEHAVIORAL_QUESTIONS.filter(q => {
+        if (State.revisionOnly && !q.priority) return false;
+        if (State.filterDiff !== "all" && q.diff !== State.filterDiff) return false;
+
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        if (State.filterStatus === "completed" && !isDone) return false;
+        if (State.filterStatus === "incomplete" && isDone) return false;
+        if (State.filterStatus === "bookmarked" && !isMarked) return false;
+
+        if (State.searchQuery) {
+          const matchTitle = q.title.toLowerCase().includes(State.searchQuery);
+          const matchSpoken = q.spoken.toLowerCase().includes(State.searchQuery);
+          const matchSituation = q.star && q.star.situation.toLowerCase().includes(State.searchQuery);
+          const matchAction = q.star && q.star.action.toLowerCase().includes(State.searchQuery);
+          if (!matchTitle && !matchSpoken && !matchSituation && !matchAction) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById("results-count-text").innerText = `Showing ${filtered.length} of ${BEHAVIORAL_QUESTIONS.length} questions`;
+
+      if (filtered.length === 0) {
+        target.innerHTML = `
+          <div class="view-card" style="text-align:center; padding:3rem;">
+            <p style="color:var(--text-muted);">No questions match your current search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(q => {
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        const railLink = document.createElement("a");
+        railLink.href = `#${q.id}`;
+        railLink.style.cssText = "color:var(--text-muted); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;";
+        railLink.innerText = `${q.num}. ${q.title}`;
+        rail.appendChild(railLink);
+
+        const card = document.createElement("article");
+        card.className = "view-card";
+        card.id = q.id;
+
+        card.innerHTML = `
+          <div class="q-meta">
+            <span class="tag tag-diff-${q.diff}">${q.diff}</span>
+            <span class="tag tag-topic">Question ${q.num} of 15</span>
+            ${q.priority ? '<span class="tag" style="background:#EEF2FF; color:#4568E8;">★ Core Story</span>' : ''}
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">Target: 90-120s spoken</span>
+          </div>
+
+          <h2 class="q-title">${q.num}. ${q.title}</h2>
+
+          <div class="q-section-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Interview-Ready Spoken Answer
+          </div>
+          <div class="callout-box">
+            <p><strong>"${escapeHTML(q.spoken)}"</strong></p>
+          </div>
+
+          ${q.star ? `
+            <div class="q-section-heading">Structured STAR Framework Breakdown</div>
+            <div class="star-grid">
+              <div class="star-step">
+                <strong>Situation</strong>
+                <p style="font-size:0.92rem; color:var(--text-main);">${escapeHTML(q.star.situation)}</p>
+              </div>
+              <div class="star-step">
+                <strong>Task</strong>
+                <p style="font-size:0.92rem; color:var(--text-main);">${escapeHTML(q.star.task)}</p>
+              </div>
+              <div class="star-step">
+                <strong>Action (What You Personally Did)</strong>
+                <p style="font-size:0.92rem; color:var(--text-main);">${escapeHTML(q.star.action)}</p>
+              </div>
+              <div class="star-step">
+                <strong>Result (Measurable Business Outcome)</strong>
+                <p style="font-size:0.92rem; color:var(--text-main);">${escapeHTML(q.star.result)}</p>
+              </div>
+            </div>
+          ` : ''}
+
+          ${q.followUps && q.followUps.length > 0 ? `
+            <div class="q-section-heading">Likely Interviewer Follow-Ups</div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+              ${q.followUps.map(f => `
+                <div style="background:var(--bg-primary); padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.875rem;">
+                  <strong style="color:var(--text-main); display:block; margin-bottom:0.25rem;">Q: ${escapeHTML(f.q)}</strong>
+                  <span style="color:var(--text-muted);">A: ${escapeHTML(f.a)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="btn-action-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn ${isDone ? 'btn-primary' : ''}" onclick="toggleCompleted('${q.id}')">
+                ${isDone ? '✓ Completed' : 'Mark as Completed'}
+              </button>
+              <button class="btn" onclick="toggleBookmarked('${q.id}')">
+                ${isMarked ? '★ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ID: <code>${q.id}</code>
+            </div>
+          </div>
+        `;
+
+        target.appendChild(card);
+      });
+    }
+
+    function toggleCompleted(id) {
+      if (State.completed.includes(id)) {
+        State.completed = State.completed.filter(x => x !== id);
+      } else {
+        State.completed.push(id);
+      }
+      localStorage.setItem("fstk_bh_completed", JSON.stringify(State.completed));
+      updateProgress();
+      renderQuestions();
+      renderNavigation();
+    }
+
+    function toggleBookmarked(id) {
+      if (State.bookmarked.includes(id)) {
+        State.bookmarked = State.bookmarked.filter(x => x !== id);
+      } else {
+        State.bookmarked.push(id);
+      }
+      localStorage.setItem("fstk_bh_bookmarked", JSON.stringify(State.bookmarked));
+      renderQuestions();
+    }
+
+    function updateProgress() {
+      const total = BEHAVIORAL_QUESTIONS.length;
+      const done = State.completed.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("section-progress-bar").style.width = `${pct}%`;
+      document.getElementById("section-progress-label").innerText = `${done}/${total} (${pct}%)`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

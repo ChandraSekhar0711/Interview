@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section I: Full-Stack System Design & Production Troubleshooting</title>
+  <style>
+    :root {
+      --bg-primary: #F6F8FC;
+      --surface: #FFFFFF;
+      --sidebar-bg: #17243A;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #172033;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --warning-bg: #FFF7E6;
+      --warning-text: #B45309;
+      --success-bg: #EAF8F0;
+      --success-text: #0F766E;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #64748B;
+      --sidebar-active: #F8FAFC;
+      --primary: #6384F9;
+      --primary-hover: #4568E8;
+      --secondary: #14B8A6;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #1E293B;
+      --code-bg: #050811;
+      --code-text: #F8FAFC;
+      --warning-bg: #2C1E04;
+      --warning-text: #FBBF24;
+      --success-bg: #062D24;
+      --success-text: #34D399;
+      --danger-bg: #361010;
+      --danger-text: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; }
+
+    #sidebar { width: 330px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.25s ease; border-right: 1px solid var(--border); }
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    #content-area { flex: 1; display: flex; overflow-y: auto; scroll-behavior: smooth; }
+    #content-stage { flex: 1; padding: 2rem 3rem; max-width: 1080px; margin: 0 auto; width: 100%; }
+    #context-rail { width: 280px; padding: 1.75rem 1.25rem; border-left: 1px solid var(--border); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+
+    header.top-bar { background: var(--surface); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; flex-shrink: 0; z-index: 30; }
+    .search-wrapper { position: relative; width: 440px; }
+    .search-input { width: 100%; padding: 0.5rem 2.2rem 0.5rem 2.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-main); font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(69, 104, 232, 0.2); }
+    .search-kbd { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; padding: 0.15rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono); }
+    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-muted); fill: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); transition: all 0.15s; }
+    .btn:hover { background: var(--bg-primary); }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-ghost { background: transparent; border-color: transparent; }
+
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .view-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); scroll-margin-top: 1.5rem; }
+    .q-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-diff-beginner { background: var(--success-bg); color: var(--success-text); }
+    .tag-diff-intermediate { background: var(--warning-bg); color: var(--warning-text); }
+    .tag-diff-advanced { background: var(--danger-bg); color: var(--danger-text); }
+    .tag-topic { background: var(--bg-primary); color: var(--text-muted); border: 1px solid var(--border); }
+    
+    .q-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.35; }
+    .q-section-heading { font-size: 0.88rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .callout-box { background: var(--bg-primary); border-left: 4px solid var(--primary); padding: 1.1rem 1.3rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 0.75rem 0 1.25rem; font-size: 0.95rem; }
+    .callout-box p { margin-bottom: 0.5rem; }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .code-container { background: var(--code-bg); border-radius: var(--radius); margin: 1.1rem 0; overflow: hidden; border: 1px solid #1E293B; }
+    .code-header { background: #1E293B; padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: #94A3B8; }
+    pre { padding: 1rem 1.2rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.86rem; color: var(--code-text); line-height: 1.55; }
+
+    .table-container { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left; }
+    th { background: var(--bg-primary); padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .mobile-menu-btn { display: none; }
+    @media (max-width: 1024px) {
+      #context-rail { display: none; }
+      #content-stage { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-menu-btn { display: inline-flex; }
+      .search-wrapper { width: 180px; }
+      #content-stage { padding: 1rem; }
+    }
+
+    @media print {
+      body { height: auto; overflow: visible; background: #FFF; color: #000; }
+      #sidebar, header.top-bar, #context-rail, .interactive-toolbar, .btn-action-group { display: none !important; }
+      #main-container, #content-area, #content-stage { overflow: visible !important; width: 100% !important; padding: 0 !important; }
+      .view-card { border: none !important; box-shadow: none !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Prep</span>
+      </div>
+      <button class="btn btn-ghost" id="sidebar-close-btn" style="color:#FFF; display:none;">✕</button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>System Design Progress</span>
+        <span id="section-progress-label">0/18 (0%)</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="section-progress-bar" style="width:0%; height:100%; background:var(--primary); transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Jump to Question</div>
+      <!-- Injected via JavaScript -->
+    </nav>
+  </aside>
+
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="global-search-input" class="search-input" placeholder="Search system design, bottlenecks, incidents, S3..." autocomplete="off">
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="revision-mode-toggle" title="Show High Priority Questions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Revision Filter</span>
+        </button>
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn" onclick="window.print()" title="Print Section">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="content-area">
+      <div id="content-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">Section I: Full-Stack System Design & Production Troubleshooting</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Exhaustive, interview-ready guide covering all 18 core architecture and incident management questions (numbered 1 through 18, corresponding to master specifications 213–230) for 5-YOE Full Stack Developers. Focuses on cross-tier integration, high-concurrency scaling, presigned S3 chunked uploads, distributed tracing, incident triage, and trade-off prioritization.</p>
+        </div>
+
+        <div class="interactive-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <select id="filter-difficulty" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Difficulties</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select id="filter-status" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Questions</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+              <option value="bookmarked">Bookmarked</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);" id="results-count-text">Showing 18 of 18 questions</div>
+        </div>
+
+        <div id="questions-render-target"></div>
+      </div>
+
+      <aside id="context-rail">
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.75rem;">
+          Table of Contents
+        </div>
+        <div id="rail-topic-outline" style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.83rem;"></div>
+
+        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;">
+            5-YOE Staff Architect Insight
+          </div>
+          <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">
+            In senior system design rounds, the interviewer evaluates whether you can <strong>connect layers end-to-end</strong>: from React DOM rendering down through ALB TLS handshakes, ASGI thread safety, connection pool saturation, and MongoDB disk page eviction. Always begin by clarifying scale and throughput numbers.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const SYSTEM_DESIGN_QUESTIONS = [
+      {
+        id: "sd-01",
+        num: 1,
+        origSpecNum: 213,
+        title: "Design a ticket-management application using React, FastAPI, MongoDB and AWS",
+        diff: "advanced",
+        priority: true,
+        spoken: "I architect the system as a decoupled three-tier application: The React SPA is hosted on S3 and delivered globally through CloudFront. API requests hit an Application Load Balancer that terminates TLS and forwards traffic to FastAPI container tasks running in Amazon ECS Fargate across private subnets in multiple Availability Zones. MongoDB Atlas serves as the primary datastore, using replica sets for high availability and compound ESR indexes for ticket filtering. Heavy attachments bypass the API servers entirely via S3 presigned URLs, and long-running email or Slack notifications are offloaded to an Amazon SQS queue processed by background ECS worker tasks.",
+        explanation: "Key scalability guarantees include: 1) Presigned URLs eliminate API container memory bloat from multi-megabyte file uploads. 2) Read-heavy ticket dashboard queries are routed to MongoDB Atlas Secondary nodes or cached in Redis. 3) SQS provides backpressure buffer protection so bursts in ticket creation do not degrade real-time API response times.",
+        code: `# High-level architectural data flow:
+# React (Browser) --[1. Auth / REST]--> ALB --> FastAPI (ECS Fargate)
+#                                                  |
+#                                       +----------+----------+
+#                                       |                     |
+#                                  [2. CRUD BSON]        [3. Async Job]
+#                                       v                     v
+#                                 MongoDB Atlas          Amazon SQS
+#                                       ^                     v
+#                                       |             Worker (ECS Fargate)
+# React (Browser) <--[4. Presigned S3]--+                     |
+#        |                                                    v
+#        +---------[5. Direct Upload / Download]--------> Amazon S3`,
+        table: {
+          headers: ["Component", "Selected Technology", "Architectural Role", "Resilience & Scaling Pattern"],
+          rows: [
+            ["Frontend Client", "React SPA + Vite", "UI, optimistic updates, client-side routing", "Cached on CloudFront Edge locations; 99.99% CDN uptime"],
+            ["API Gateway / LB", "AWS Application Load Balancer", "TLS termination, health checks, path routing", "Multi-AZ active-active failover, AWS WAF integration"],
+            ["Backend Service", "FastAPI (ASGI) on ECS Fargate", "Business logic, schema validation via Pydantic", "Autoscaling tasks based on ALB RequestCountPerTarget"],
+            ["Database Tier", "MongoDB Atlas (Replica Set)", "Ticket, user, and audit history BSON storage", "Multi-AZ automatic failover with electable Secondaries"],
+            ["Async Processing", "Amazon SQS + Worker Tasks", "Notification dispatch, analytics indexing", "Dead Letter Queue (DLQ) with exponential retry backoff"]
+          ]
+        },
+        followUps: [
+          { q: "How do you handle real-time ticket updates across agents?", a: "Establish WebSockets on FastAPI backed by Redis Pub/Sub to broadcast ticket assignment and status changes to connected React clients in real time." }
+        ]
+      },
+      {
+        id: "sd-02",
+        num: 2,
+        origSpecNum: 214,
+        title: "Design a file-upload service that supports large files, access control and secure downloads using S3",
+        diff: "advanced",
+        priority: true,
+        spoken: "Never stream multi-gigabyte files through the application web servers, as that saturates network interfaces and blocks connection pools. For large uploads up to 5 TB, we use S3 Multipart Upload via Presigned URLs: The React client initiates an upload with the FastAPI backend, which verifies authorization, creates an S3 Multipart Upload ID, and returns presigned URLs for each 10MB chunk. React uploads chunks directly to S3 in parallel with retry logic. Once completed, FastAPI issues the CompleteMultipartUpload call. For downloads, the backend generates short-lived (e.g. 60-second) presigned GET URLs only after verifying that the user's role and organization ID permit access.",
+        code: `# Backend FastAPI S3 Presigned Multipart Handler
+import boto3
+from fastapi import APIRouter, Depends, HTTPException
+
+router = APIRouter()
+s3_client = boto3.client('s3', region_name='ap-south-1')
+BUCKET = "production-secure-vault"
+
+@router.post("/files/multipart/initiate")
+async def initiate_upload(filename: str, parts_count: int, user = Depends(get_current_user)):
+    file_key = f"org_{user['org_id']}/{uuid4()}-{filename}"
+    multipart = s3_client.create_multipart_upload(Bucket=BUCKET, Key=file_key)
+    
+    # Generate presigned URL for each sequential chunk
+    presigned_urls = [
+        s3_client.generate_presigned_url(
+            'upload_part',
+            Params={'Bucket': BUCKET, 'Key': file_key, 'UploadId': multipart['UploadId'], 'PartNumber': i},
+            ExpiresIn=900
+        )
+        for i in range(1, parts_count + 1)
+    ]
+    return {"upload_id": multipart['UploadId'], "file_key": file_key, "urls": presigned_urls}`,
+        followUps: [
+          { q: "How do you clean up orphaned, uncompleted multipart uploads in S3?", a: "Configure an S3 Lifecycle Rule to automatically abort incomplete multipart uploads after 7 days, preventing unnecessary storage costs." }
+        ]
+      },
+      {
+        id: "sd-03",
+        num: 3,
+        origSpecNum: 215,
+        title: "Design a notification system using FastAPI, SQS and worker processes",
+        diff: "intermediate",
+        priority: true,
+        spoken: "A production notification system decouples generation from delivery. When an event occurs (e.g. ticket assigned), FastAPI formats a notification envelope and pushes it to an Amazon SQS Standard queue. Dedicated ECS background worker tasks continuously poll the queue using long-polling (WaitTimeSeconds=20). The workers parse the message, check user notification preferences in MongoDB or Redis, enforce rate limits, and dispatch through external providers (SendGrid for email, Twilio for SMS, Firebase for push). If an external API fails, SQS visibility timeout returns the message to the queue for retry; after 3 failures, it routes to a Dead Letter Queue (DLQ) for alerting.",
+        code: `# Python Worker Polling Loop Pattern
+import boto3, json, time
+
+sqs = boto3.client('sqs')
+QUEUE_URL = "https://sqs.ap-south-1.amazonaws.com/123/notifications-queue"
+
+def start_worker():
+    while True:
+        # Long polling saves API call costs and returns immediately when messages arrive
+        response = sqs.receive_message(
+            QueueUrl=QUEUE_URL,
+            MaxNumberOfMessages=10,
+            WaitTimeSeconds=20,
+            VisibilityTimeout=30
+        )
+        for msg in response.get('Messages', []):
+            try:
+                payload = json.loads(msg['Body'])
+                dispatch_notification(payload) # Calls SendGrid / Twilio
+                # Delete message on successful dispatch:
+                sqs.delete_message(QueueUrl=QUEUE_URL, ReceiptHandle=msg['ReceiptHandle'])
+            except Exception as e:
+                # Unhandled errors allow visibility timeout to expire, enabling safe retry
+                logger.error(f"Failed to process message {msg['MessageId']}: {e}")`,
+        followUps: [
+          { q: "How do you prevent sending duplicate notifications on SQS retries?", a: "The worker checks an idempotency key in Redis (`SET notify:{id} PROCESSING NX EX 300`) before dispatching." }
+        ]
+      },
+      {
+        id: "sd-04",
+        num: 4,
+        origSpecNum: 216,
+        title: "How would you design an API that must handle 5,000 concurrent users?",
+        diff: "advanced",
+        priority: true,
+        spoken: "Handling 5,000 active concurrent users requires optimizing every hop in the request path: 1) Edge Caching: CloudFront terminates SSL and caches static assets and idempotent GET responses. 2) Load Balancing & Non-blocking Concurrency: An ALB balances traffic across an ECS Fargate cluster running FastAPI on Uvicorn with asyncpg/Motor non-blocking database drivers, allowing each worker to interleave thousands of active sockets. 3) Caching Tier: ElastiCache Redis handles active session lookups and hot database queries to keep cache hits above 85%. 4) Connection Pooling: We configure explicit connection pooling limits for MongoDB and PostgreSQL (via PgBouncer) to prevent database connection exhaustion. 5) Rate Limiting & Autoscaling: CloudWatch triggers target-tracking scaling policies to scale ECS tasks horizontally before CPU exceeds 60%.",
+        table: {
+          headers: ["Layer", "Bottleneck Risk", "Architectural Solution"],
+          rows: [
+            ["Edge / Network", "TLS negotiation & socket exhaustion", "CloudFront edge termination + HTTP/2 connection reuse"],
+            ["API Compute", "Worker thread blocking & CPU saturation", "FastAPI non-blocking async event loop; horizontal task scaling"],
+            ["Database Connection", "Max connections limit reached (PostgreSQL/Mongo)", "PgBouncer or Motor client-side connection pooling limits"],
+            ["Database Disk I/O", "High read IOPS causing timeout spikes", "Redis read-through cache for top 20% most accessed records"]
+          ]
+        }
+      },
+      {
+        id: "sd-05",
+        num: 5,
+        origSpecNum: 217,
+        title: "How would you implement pagination, filtering and sorting for a React table backed by millions of MongoDB records?",
+        diff: "advanced",
+        priority: true,
+        spoken: "With millions of records, offset-based pagination (`skip().limit()`) causes severe O(n) performance degradation because MongoDB must scan and discard thousands of index entries. We implement Keyset (Cursor-based) pagination: The React table tracks the sort field and cursor value (e.g. `_id` or `created_at`) of the last visible row. When the user requests the next page, the client queries `{ created_at: { $lt: last_seen_date } }` with `limit(25)`. On the database, we build a compound index strictly adhering to the ESR (Equality, Sort, Range) rule: Equality filters first (e.g., status, department), Sort field second (created_at), and Range filters last. In the React UI, we debounce filter inputs and virtualize table rows using react-window to prevent DOM bloating.",
+        code: `# FastAPI Backend Keyset Pagination Query
+@router.get("/tickets")
+async def list_tickets(
+    status: str | None = None,
+    cursor: str | None = None, # Base64 encoded ISO timestamp or ObjectId
+    limit: int = 25,
+    db = Depends(get_db)
+):
+    query = {"is_deleted": False}
+    if status:
+        query["status"] = status
+    if cursor:
+        query["created_at"] = {"$lt": parse_cursor(cursor)}
+        
+    cursor_obj = db.tickets.find(query).sort("created_at", -1).limit(limit)
+    items = await cursor_obj.to_list(length=limit)
+    next_cursor = encode_cursor(items[-1]["created_at"]) if items else None
+    return {"items": items, "next_cursor": next_cursor}`
+      },
+      {
+        id: "sd-06",
+        num: 6,
+        origSpecNum: 218,
+        title: "How would you handle authentication across React, an API Gateway and multiple backend services?",
+        diff: "advanced",
+        priority: true,
+        spoken: "We use a centralized authentication model with decentralized verification via cryptographically signed JWTs: The React client authenticates against an Auth Service (or AWS Cognito/Okta) and stores the refresh token in a secure, httpOnly, SameSite=Strict cookie, and the short-lived access token in memory. The client sends the access token in the Authorization header. The API Gateway validates the JWT signature and expiration at the edge using the Identity Provider's public JSON Web Key Set (JWKS), immediately rejecting invalid requests. Downstream microservices receive the validated claims (user ID, tenant ID, roles) forwarded in trusted internal headers (`X-User-Id`, `X-User-Roles`), or verify the asymmetric signature locally without querying a central database.",
+        followUps: [
+          { q: "How do you invalidate a compromised JWT before its expiration?", a: "Maintain a high-speed Redis token revocation blacklist keyed by the JWT ID (`jti`) checked during authorization." }
+        ]
+      },
+      {
+        id: "sd-07",
+        num: 7,
+        origSpecNum: 219,
+        title: "A React page takes 10 seconds to load, although the backend responds in 300 ms. How would you diagnose the frontend bottleneck?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "A 10-second client delay with a 300ms backend response indicates a browser main-thread bottleneck. I diagnose this systematically using Chrome DevTools: 1) Performance Panel: Record a trace during page load and inspect the flame graph for Long Tasks (>50ms). This identifies excessive JavaScript execution time, blocking loops, or expensive data parsing. 2) React DevTools Profiler: Check for cascading re-renders and components that take hundreds of milliseconds to render. 3) DOM Inspection: Verify if the page is attempting to mount thousands of un-virtualized DOM nodes at once. 4) Network Panel: Check if render-blocking CSS/fonts, massive uncompressed JavaScript bundles (>5MB), or asset waterfalls are delaying the First Contentful Paint (FCP). Remediation includes virtualizing tables, code-splitting with React.lazy, and offloading heavy calculations to Web Workers.",
+        followUps: [
+          { q: "What metric reveals if JavaScript is locking the main thread during user clicks?", a: "INP (Interaction to Next Paint) and Total Blocking Time (TBT)." }
+        ]
+      },
+      {
+        id: "sd-08",
+        num: 8,
+        origSpecNum: 220,
+        title: "A request works in the browser but fails intermittently in production. What logs, metrics and traces would you examine?",
+        diff: "advanced",
+        priority: true,
+        spoken: "Intermittent production failures require inspecting the entire distributed telemetry path: 1) Distributed Traces (AWS X-Ray / OpenTelemetry): Follow the Correlation ID (`X-Correlation-ID`) across the request lifecycle to pinpoint which exact microservice, database call, or downstream HTTP dependency is timing out or throwing errors. 2) Load Balancer Metrics: Inspect CloudWatch ALB metrics for HTTPCode_Target_5XX, ELB 504 Gateway Timeouts, and TargetResponseTime percentiles (p99/p99.9) to detect unhealthy backend container instances. 3) Application Logs: Search centralized logs (CloudWatch / Datadog) using the correlation ID to view full exception tracebacks and thread state. 4) Infrastructure Metrics: Check ECS/EC2 CPU and RAM utilization for OOM container restarts, and check database connection pool active vs idle connection graphs to identify connection pool exhaustion.",
+        table: {
+          headers: ["Symptom", "Telemetry Source", "Underlying Root Cause"],
+          rows: [
+            ["Intermittent 504 Gateway Timeout", "ALB access logs + TargetResponseTime", "Downstream database query lock or thread starvation on specific container"],
+            ["Intermittent 502 Bad Gateway", "ALB metrics: HTTPCode_ELB_502_Count", "Container process crashed (OOM 137) or closed socket before sending response"],
+            ["Fails only for certain users", "Structured JSON logs filtered by user_id", "Data-specific bug (e.g. null field in specific user BSON document)"]
+          ]
+        }
+      },
+      {
+        id: "sd-09",
+        num: 9,
+        origSpecNum: 221,
+        title: "After a deployment, API latency doubles and error rates increase. Describe your investigation and rollback strategy",
+        diff: "advanced",
+        priority: true,
+        spoken: "My immediate priority is mitigating customer impact before diagnosing root cause: 1) Mitigate: If error rates exceed SLAs, trigger an immediate rollback to the previous known-good task definition revision or flip the ALB target group back to the Blue environment. 2) Triage: While rolling back, capture current telemetry snapshots: inspect deployment diffs, database slow query logs, and CloudWatch p99 latency graphs. 3) Root Cause Analysis: Common causes include unindexed database queries introduced in new code, missing environment variables, threadpool deadlocks, or circular microservice calls. 4) Post-Mortem: Write an incident post-mortem with root cause, timeline, and automated CI canary validation gates to prevent regressions.",
+        followUps: [
+          { q: "How can you automate this rollback process in AWS?", a: "Attach a CloudWatch Composite Alarm monitoring 5xx errors and p99 latency to the ECS deployment circuit breaker with auto-rollback enabled." }
+        ]
+      },
+      {
+        id: "sd-10",
+        num: 10,
+        origSpecNum: 222,
+        title: "A user submits the same form twice and creates duplicate records. How would you fix the issue across frontend and backend?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "We resolve duplicate submissions using defense-in-depth across both frontend and backend: 1) Frontend: Immediately disable the submit button upon first click, show a loading spinner, and prevent repeated form triggers. However, client-side controls can be bypassed by network retries or programmatic requests. 2) Backend (Idempotency Key Pattern): The client generates a unique UUID `Idempotency-Key` sent in the request header. When the API receives the request, it executes an atomic `SET key PROCESSING NX EX 60` in Redis. If the key already exists, it returns a 409 Conflict or waits and returns the cached response. 3) Database Constraint: Enforce unique compound indexes in MongoDB (e.g. `{ user_id: 1, order_reference: 1 }`) so duplicate inserts fail deterministically at the storage layer.",
+        code: `# Backend Idempotency Validation Decorator in FastAPI
+from fastapi import Request, HTTPException
+import redis.asyncio as redis
+
+redis_client = redis.Redis(host="localhost", port=6379)
+
+async def verify_idempotency(request: Request):
+    idem_key = request.headers.get("Idempotency-Key")
+    if not idem_key:
+        return # Skip for endpoints not requiring idempotency
+        
+    redis_key = f"idemp:{idem_key}"
+    # Atomic set if not exists, expires in 60s
+    acquired = await redis_client.set(redis_key, "IN_PROGRESS", nx=True, ex=60)
+    if not acquired:
+        raise HTTPException(
+            status_code=409, 
+            detail="Duplicate request detected. Operation already in progress."
+        )`
+      },
+      {
+        id: "sd-11",
+        num: 11,
+        origSpecNum: 223,
+        title: "How would you implement structured logging, correlation IDs and useful error messages without exposing sensitive data?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "We output logs exclusively in structured JSON format to stdout. Every request is tagged by middleware with a Correlation ID (`X-Correlation-ID`), which is bound to Python's `contextvars` so every log emitted within that request thread automatically includes the correlation ID, user ID, and tenant ID. To prevent logging PII or sensitive secrets, we build a logging filter that recursively masks sensitive keys (passwords, auth tokens, credit cards, SSNs) with `***REDACTED***`. On the API layer, clients receive safe, generic error envelopes (`'An internal error occurred. Quote ID: c8a141'`), while developers search the internal correlation ID in CloudWatch to view the full unmasked traceback and debugging context.",
+        code: `# Structured JSON Log Formatter with PII Redaction
+import json, logging
+
+SENSITIVE_KEYS = {"password", "token", "authorization", "secret", "cvv"}
+
+class SafeJSONFormatter(logging.Formatter):
+    def format(self, record):
+        log_obj = {
+            "timestamp": self.formatTime(record),
+            "level": record.levelname,
+            "message": record.getMessage(),
+            "logger": record.name,
+            "correlation_id": getattr(record, "correlation_id", "N/A")
+        }
+        if isinstance(record.args, dict):
+            log_obj["data"] = {
+                k: ("***REDACTED***" if k.lower() in SENSITIVE_KEYS else v)
+                for k, v in record.args.items()
+            }
+        return json.dumps(log_obj)`
+      },
+      {
+        id: "sd-12",
+        num: 12,
+        origSpecNum: 224,
+        title: "How would you design a health-check endpoint that distinguishes application health from downstream dependency health?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "We implement two distinct health check endpoints: Liveness and Readiness. 1) Liveness Endpoint (`/health/live`): Checks only if the local application process is running and responding to HTTP requests. The load balancer uses this to decide whether to restart a frozen container. It must NEVER check downstream dependencies, because a temporary database outage would cause all API containers to fail liveness and restart simultaneously in a catastrophic cascading crash loop. 2) Readiness Endpoint (`/health/ready`): Performs quick, non-blocking ping checks (with strict 1-second timeouts) against critical dependencies like MongoDB and Redis. Orchestrators use readiness to decide whether to route user traffic to the instance.",
+        code: `@router.get("/health/live")
+async def liveness():
+    # Shallow check: process is alive and event loop is running
+    return {"status": "ALIVE"}
+
+@router.get("/health/ready")
+async def readiness(db = Depends(get_db), cache = Depends(get_cache)):
+    # Deep check: can the service fulfill requests?
+    checks = {}
+    try:
+        await asyncio.wait_for(db.command("ping"), timeout=1.0)
+        checks["mongodb"] = "UP"
+    except Exception:
+        checks["mongodb"] = "DOWN"
+        
+    try:
+        await asyncio.wait_for(cache.ping(), timeout=1.0)
+        checks["redis"] = "UP"
+    except Exception:
+        checks["redis"] = "DOWN"
+
+    is_ready = all(v == "UP" for v in checks.values())
+    status_code = 200 if is_ready else 503
+    return JSONResponse(status_code=status_code, content={"status": "READY" if is_ready else "UNHEALTHY", "checks": checks})`
+      },
+      {
+        id: "sd-13",
+        num: 13,
+        origSpecNum: 225,
+        title: "How would you protect a public-facing application against brute-force attempts, abusive traffic and common web vulnerabilities?",
+        diff: "advanced",
+        priority: true,
+        spoken: "We protect public applications through defense-in-depth across multiple layers: 1) Edge Perimeter: AWS WAF (Web Application Firewall) attached to CloudFront/ALB enforces rate limits (e.g., max 100 requests per 5 minutes per IP), blocks known malicious IP reputation lists, and applies managed rule sets against OWASP Top 10 vulnerabilities (SQLi, XSS, CSRF). 2) Application Layer: Implement sliding window rate-limiting using Redis for sensitive endpoints (/login, /checkout) keyed by username and IP. 3) Security Headers: Configure strict Content Security Policy (CSP), HSTS, X-Content-Type-Options: nosniff, and SameSite=Strict cookies to prevent clickjacking and XSS. 4) Account Lockout: Implement exponential backoff and CAPTCHAs (Cloudflare Turnstile) after 5 consecutive failed login attempts.",
+        followUps: [
+          { q: "How do you distinguish legitimate corporate users sharing an IP from a DDoS attacker?", a: "Key rate limits on authenticated user IDs or session tokens rather than raw client IP addresses for authenticated routes." }
+        ]
+      },
+      {
+        id: "sd-14",
+        num: 14,
+        origSpecNum: 226,
+        title: "How would you deploy the React frontend and FastAPI backend independently while maintaining compatibility between them?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Decoupling deployments requires strict contract management and backward compatibility: 1) Versioned API Contracts: Backend routes use URI versioning (e.g. `/api/v1/` and `/api/v2/`). The backend must support both versions simultaneously during transition periods. 2) Schema Evolution: Backend changes must be additive (adding optional fields) and never rename or delete fields without deprecation cycles. 3) Automated Contract Testing: Use tools like OpenAPI specs or Pact to validate that the React client's expected API types match the backend's published OpenAPI schema in CI before deployment. 4) Independent Hosting: React is deployed to S3/CloudFront with atomic, content-hashed bundle filenames (`index.[hash].js`), ensuring users with cached older index.html files continue calling compatible backend endpoints without breaking.",
+        followUps: [
+          { q: "What is the Expand and Contract pattern in API evolution?", a: "Expand: Add new fields/endpoints while keeping old ones working. Contract: Once all frontend clients migrate to the new endpoints (verified via logs), decommission the legacy endpoints." }
+        ]
+      },
+      {
+        id: "sd-15",
+        num: 15,
+        origSpecNum: 227,
+        title: "What would you do if a database query is slow, CPU utilization is high and the application is experiencing timeouts simultaneously?",
+        diff: "advanced",
+        priority: true,
+        spoken: "This triad (slow query, high CPU, timeouts) indicates a cascading resource exhaustion event, usually caused by an unindexed query scanning millions of rows under high concurrency. My step-by-step triage is: 1) Mitigate Immediately: Identify and kill long-running queries consuming CPU using `db.killOp()` in MongoDB or `pg_terminate_backend()` in PostgreSQL. Temporarily increase application connection timeouts or enable rate limiting at the load balancer to shed load. 2) Identify the Offending Query: Inspect the database slow query log or run `db.currentOp({ secs_running: { $gt: 5 } })` to find the exact query pattern. 3) Root Cause & Fix: Run `.explain('executionStats')` on the query to identify if it is running a COLLSCAN or in-memory sort. Add the missing compound index using background indexing. 4) Prevention: Implement query timeouts (e.g., `maxTimeMS` in MongoDB) so runaway queries terminate automatically before exhausting database CPU.",
+        code: `# MongoDB Diagnostic commands during incident:
+# 1. Find all active operations running longer than 3 seconds:
+db.currentOp({ "active": true, "secs_running": { "$gt": 3 } })
+
+# 2. Kill the offending query thread to restore CPU:
+db.killOp(1249821)`
+      },
+      {
+        id: "sd-16",
+        num: 16,
+        origSpecNum: 228,
+        title: "How would you implement graceful shutdown so that in-flight requests and background jobs are handled safely?",
+        diff: "advanced",
+        priority: true,
+        spoken: "When a container receives a SIGTERM signal during autoscaling or deployment, it must not terminate abruptly. Graceful shutdown proceeds in sequence: 1) Stop Accepting New Traffic: The load balancer marks the instance unhealthy and deregisters it, draining active connections over a deregistration delay (e.g. 30 seconds). 2) Finish In-Flight Work: The application catches SIGTERM, allows current in-flight HTTP requests to finish responding (up to a timeout like 25s), and stops worker loops from picking up new messages from SQS. 3) Drain Database Pools: Once all requests complete, close database connection pools and Redis sockets cleanly. 4) Final Exit: Exit the process with code 0. In FastAPI/Starlette, this lifecycle is managed natively using the async context manager `lifespan` handler.",
+        code: `# Graceful Shutdown in FastAPI using Lifespan Context
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+import asyncio
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: allocate database pools
+    db_pool = await create_db_pool()
+    app.state.db_pool = db_pool
+    yield
+    # Shutdown: triggered on SIGTERM
+    print("[SHUTDOWN] SIGTERM received. Closing connection pools...")
+    await app.state.db_pool.close()
+    print("[SHUTDOWN] All resources cleanly drained. Exiting.")
+
+app = FastAPI(lifespan=lifespan)`
+      },
+      {
+        id: "sd-17",
+        num: 17,
+        origSpecNum: 229,
+        title: "Describe a production incident you investigated: Root cause, mitigation, and preventive measures (STAR framework)",
+        diff: "advanced",
+        priority: true,
+        spoken: "In a previous enterprise project, our production API experienced a sudden surge in 504 Gateway Timeouts following a peak morning traffic spike. Using the STAR framework: Situation: The API became unresponsive, with ALB latency spiking from 80ms to over 15 seconds. Task: As on-call senior engineer, I needed to restore service and prevent data corruption. Action: I inspected CloudWatch and saw MongoDB CPU at 100%. Running `db.currentOp()` revealed thousands of concurrent queries scanning the entire 8-million document 'orders' collection without an index, caused by a new filter deployed the previous evening. I immediately applied a hotfix compound index directly on the Primary replica node, which replicated to Secondaries and dropped CPU back to 12% within 3 minutes. Result: API latency returned to baseline under 90ms. Prevention: I added automated index validation to our CI pipeline, configured `maxTimeMS(2000)` on all database queries to prevent unindexed queries from hanging, and set up CloudWatch alarms for database CPU exceeding 75%.",
+        table: {
+          headers: ["Incident Phase", "Key Actions Taken"],
+          rows: [
+            ["Symptom & Triage", "CloudWatch alerts triggered on ALB 504 timeouts; database CPU pinned at 100%"],
+            ["Root Cause", "New order search endpoint omitted compound index, triggering full collection scans on 8M records"],
+            ["Immediate Mitigation", "Killed long-running queries via `db.killOp()` and created compound index in background"],
+            ["Long-term Prevention", "Enforced strict query timeouts (`maxTimeMS`), added index linting to CI/CD, and improved staging load test datasets"]
+          ]
+        }
+      },
+      {
+        id: "sd-18",
+        num: 18,
+        origSpecNum: 230,
+        title: "How do you prioritize reliability, performance, security and delivery speed when they conflict?",
+        diff: "advanced",
+        priority: true,
+        spoken: "I prioritize these competing priorities using a structured hierarchy: Security is non-negotiable—a fast, feature-rich application is useless if user data is compromised, so basic security gates (authentication, encryption, dependency vulnerability scans) cannot be compromised for speed. Reliability is second—the system must be consistently available and correct; users tolerate a slightly slower feature, but they will not tolerate data loss or outages. Performance and Delivery Speed are balanced dynamically based on business context: For an early MVP or urgent market validation, I favor delivery speed over micro-optimizations, building clean, modular code with good test coverage. Once traffic scales, I profile real production bottlenecks to optimize performance where it matters most, rather than engaging in premature optimization.",
+        followUps: [
+          { q: "How do you handle a product manager demanding a release that skips security review?", a: "Communicate risk in business terms (regulatory fines, customer churn, breach blast radius) and propose an incremental compromise: launch a scoped MVP behind a feature flag with the security gates intact." }
+        ]
+      }
+    ];
+
+    const State = {
+      theme: localStorage.getItem("fstk_theme") || "light",
+      completed: JSON.parse(localStorage.getItem("fstk_sd_completed") || "[]"),
+      bookmarked: JSON.parse(localStorage.getItem("fstk_sd_bookmarked") || "[]"),
+      revisionOnly: false,
+      filterDiff: "all",
+      filterStatus: "all",
+      searchQuery: ""
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(State.theme);
+      renderNavigation();
+      renderQuestions();
+      updateProgress();
+      bindEvents();
+    });
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fstk_theme", theme);
+      State.theme = theme;
+    }
+
+    function bindEvents() {
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        applyTheme(State.theme === "light" ? "dark" : "light");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+          e.preventDefault();
+          document.getElementById("global-search-input").focus();
+        }
+      });
+
+      document.getElementById("global-search-input").addEventListener("input", (e) => {
+        State.searchQuery = e.target.value.toLowerCase().trim();
+        renderQuestions();
+      });
+
+      document.getElementById("filter-difficulty").addEventListener("change", (e) => {
+        State.filterDiff = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("filter-status").addEventListener("change", (e) => {
+        State.filterStatus = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("revision-mode-toggle").addEventListener("click", (e) => {
+        State.revisionOnly = !State.revisionOnly;
+        e.currentTarget.classList.toggle("btn-primary", State.revisionOnly);
+        renderQuestions();
+      });
+
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("mobile-menu-toggle").addEventListener("click", () => sidebar.classList.toggle("open"));
+      document.getElementById("sidebar-close-btn").addEventListener("click", () => sidebar.classList.remove("open"));
+    }
+
+    function renderNavigation() {
+      const container = document.getElementById("sidebar-nav-container");
+      container.innerHTML = '<div class="nav-section-title">All 18 System Design Questions</div>';
+
+      SYSTEM_DESIGN_QUESTIONS.forEach(q => {
+        const item = document.createElement("a");
+        item.className = "nav-item";
+        item.href = `#${q.id}`;
+        item.innerHTML = `
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">${q.num}. ${q.title}</span>
+          <span id="badge-${q.id}" class="nav-badge">${State.completed.includes(q.id) ? '✓' : ''}</span>
+        `;
+        item.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById("sidebar").classList.remove("open");
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuestions() {
+      const target = document.getElementById("questions-render-target");
+      const rail = document.getElementById("rail-topic-outline");
+      target.innerHTML = "";
+      rail.innerHTML = "";
+
+      let filtered = SYSTEM_DESIGN_QUESTIONS.filter(q => {
+        if (State.revisionOnly && !q.priority) return false;
+        if (State.filterDiff !== "all" && q.diff !== State.filterDiff) return false;
+
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        if (State.filterStatus === "completed" && !isDone) return false;
+        if (State.filterStatus === "incomplete" && isDone) return false;
+        if (State.filterStatus === "bookmarked" && !isMarked) return false;
+
+        if (State.searchQuery) {
+          const matchTitle = q.title.toLowerCase().includes(State.searchQuery);
+          const matchSpoken = q.spoken.toLowerCase().includes(State.searchQuery);
+          const matchCode = q.code && q.code.toLowerCase().includes(State.searchQuery);
+          if (!matchTitle && !matchSpoken && !matchCode) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById("results-count-text").innerText = `Showing ${filtered.length} of ${SYSTEM_DESIGN_QUESTIONS.length} questions`;
+
+      if (filtered.length === 0) {
+        target.innerHTML = `
+          <div class="view-card" style="text-align:center; padding:3rem;">
+            <p style="color:var(--text-muted);">No questions match your current search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(q => {
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        const railLink = document.createElement("a");
+        railLink.href = `#${q.id}`;
+        railLink.style.cssText = "color:var(--text-muted); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;";
+        railLink.innerText = `${q.num}. ${q.title}`;
+        rail.appendChild(railLink);
+
+        const card = document.createElement("article");
+        card.className = "view-card";
+        card.id = q.id;
+
+        card.innerHTML = `
+          <div class="q-meta">
+            <span class="tag tag-diff-${q.diff}">${q.diff}</span>
+            <span class="tag tag-topic">Question ${q.num} of 18 (Spec #${q.origSpecNum})</span>
+            ${q.priority ? '<span class="tag" style="background:#EEF2FF; color:#4568E8;">★ High Priority</span>' : ''}
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">Target: 60-90s spoken</span>
+          </div>
+
+          <h2 class="q-title">${q.num}. ${q.title}</h2>
+
+          <div class="q-section-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Interview-Ready Spoken Answer
+          </div>
+          <div class="callout-box">
+            <p><strong>"${escapeHTML(q.spoken)}"</strong></p>
+          </div>
+
+          ${q.explanation ? `
+            <div class="q-section-heading">Architectural Deep-Dive & Internals</div>
+            <p style="font-size:0.93rem; color:var(--text-main); margin-bottom:1rem;">${escapeHTML(q.explanation)}</p>
+          ` : ''}
+
+          ${q.table ? `
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>${q.table.headers.map(h => `<th>${escapeHTML(h)}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${q.table.rows.map(r => `<tr>${r.map(c => `<td>${escapeHTML(c)}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          ${q.code ? `
+            <div class="code-container">
+              <div class="code-header">
+                <span>Production Architecture Code / Blueprint</span>
+                <button class="btn btn-ghost" style="color:#FFF; padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="copyCode(this)">Copy Snippet</button>
+              </div>
+              <pre><code>${escapeHTML(q.code)}</code></pre>
+            </div>
+          ` : ''}
+
+          ${q.followUps && q.followUps.length > 0 ? `
+            <div class="q-section-heading">Likely Interviewer Follow-Ups</div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+              ${q.followUps.map(f => `
+                <div style="background:var(--bg-primary); padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.875rem;">
+                  <strong style="color:var(--text-main); display:block; margin-bottom:0.25rem;">Q: ${escapeHTML(f.q)}</strong>
+                  <span style="color:var(--text-muted);">A: ${escapeHTML(f.a)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="btn-action-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn ${isDone ? 'btn-primary' : ''}" onclick="toggleCompleted('${q.id}')">
+                ${isDone ? '✓ Completed' : 'Mark as Completed'}
+              </button>
+              <button class="btn" onclick="toggleBookmarked('${q.id}')">
+                ${isMarked ? '★ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ID: <code>${q.id}</code>
+            </div>
+          </div>
+        `;
+
+        target.appendChild(card);
+      });
+    }
+
+    function toggleCompleted(id) {
+      if (State.completed.includes(id)) {
+        State.completed = State.completed.filter(x => x !== id);
+      } else {
+        State.completed.push(id);
+      }
+      localStorage.setItem("fstk_sd_completed", JSON.stringify(State.completed));
+      updateProgress();
+      renderQuestions();
+      renderNavigation();
+    }
+
+    function toggleBookmarked(id) {
+      if (State.bookmarked.includes(id)) {
+        State.bookmarked = State.bookmarked.filter(x => x !== id);
+      } else {
+        State.bookmarked.push(id);
+      }
+      localStorage.setItem("fstk_sd_bookmarked", JSON.stringify(State.bookmarked));
+      renderQuestions();
+    }
+
+    function copyCode(btn) {
+      const code = btn.closest(".code-container").querySelector("code").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy Snippet", 2000);
+      });
+    }
+
+    function updateProgress() {
+      const total = SYSTEM_DESIGN_QUESTIONS.length;
+      const done = State.completed.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("section-progress-bar").style.width = `${pct}%`;
+      document.getElementById("section-progress-label").innerText = `${done}/${total} (${pct}%)`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section H: Git & CI/CD Pipelines — Complete 5 YOE Full-Stack Guide</title>
+  <style>
+    :root {
+      --bg-primary: #F6F8FC;
+      --surface: #FFFFFF;
+      --sidebar-bg: #17243A;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #172033;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --warning-bg: #FFF7E6;
+      --warning-text: #B45309;
+      --success-bg: #EAF8F0;
+      --success-text: #0F766E;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #64748B;
+      --sidebar-active: #F8FAFC;
+      --primary: #6384F9;
+      --primary-hover: #4568E8;
+      --secondary: #14B8A6;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #1E293B;
+      --code-bg: #050811;
+      --code-text: #F8FAFC;
+      --warning-bg: #2C1E04;
+      --warning-text: #FBBF24;
+      --success-bg: #062D24;
+      --success-text: #34D399;
+      --danger-bg: #361010;
+      --danger-text: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; }
+
+    #sidebar { width: 330px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.25s ease; border-right: 1px solid var(--border); }
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    #content-area { flex: 1; display: flex; overflow-y: auto; scroll-behavior: smooth; }
+    #content-stage { flex: 1; padding: 2rem 3rem; max-width: 1080px; margin: 0 auto; width: 100%; }
+    #context-rail { width: 280px; padding: 1.75rem 1.25rem; border-left: 1px solid var(--border); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+
+    header.top-bar { background: var(--surface); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; flex-shrink: 0; z-index: 30; }
+    .search-wrapper { position: relative; width: 440px; }
+    .search-input { width: 100%; padding: 0.5rem 2.2rem 0.5rem 2.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-main); font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(69, 104, 232, 0.2); }
+    .search-kbd { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; padding: 0.15rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono); }
+    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-muted); fill: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); transition: all 0.15s; }
+    .btn:hover { background: var(--bg-primary); }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-ghost { background: transparent; border-color: transparent; }
+
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .view-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); scroll-margin-top: 1.5rem; }
+    .q-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-diff-beginner { background: var(--success-bg); color: var(--success-text); }
+    .tag-diff-intermediate { background: var(--warning-bg); color: var(--warning-text); }
+    .tag-diff-advanced { background: var(--danger-bg); color: var(--danger-text); }
+    .tag-topic { background: var(--bg-primary); color: var(--text-muted); border: 1px solid var(--border); }
+    
+    .q-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.35; }
+    .q-section-heading { font-size: 0.88rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .callout-box { background: var(--bg-primary); border-left: 4px solid var(--primary); padding: 1.1rem 1.3rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 0.75rem 0 1.25rem; font-size: 0.95rem; }
+    .callout-box p { margin-bottom: 0.5rem; }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .code-container { background: var(--code-bg); border-radius: var(--radius); margin: 1.1rem 0; overflow: hidden; border: 1px solid #1E293B; }
+    .code-header { background: #1E293B; padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: #94A3B8; }
+    pre { padding: 1rem 1.2rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.86rem; color: var(--code-text); line-height: 1.55; }
+
+    .table-container { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left; }
+    th { background: var(--bg-primary); padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .mobile-menu-btn { display: none; }
+    @media (max-width: 1024px) {
+      #context-rail { display: none; }
+      #content-stage { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-menu-btn { display: inline-flex; }
+      .search-wrapper { width: 180px; }
+      #content-stage { padding: 1rem; }
+    }
+
+    @media print {
+      body { height: auto; overflow: visible; background: #FFF; color: #000; }
+      #sidebar, header.top-bar, #context-rail, .interactive-toolbar, .btn-action-group { display: none !important; }
+      #main-container, #content-area, #content-stage { overflow: visible !important; width: 100% !important; padding: 0 !important; }
+      .view-card { border: none !important; box-shadow: none !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Prep</span>
+      </div>
+      <button class="btn btn-ghost" id="sidebar-close-btn" style="color:#FFF; display:none;">✕</button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>Git & CI/CD Progress</span>
+        <span id="section-progress-label">0/12 (0%)</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="section-progress-bar" style="width:0%; height:100%; background:var(--primary); transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Jump to Question</div>
+      <!-- Populated via JavaScript -->
+    </nav>
+  </aside>
+
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="global-search-input" class="search-input" placeholder="Search merge, rebase, CI/CD, blue-green, migrations..." autocomplete="off">
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="revision-mode-toggle" title="Show High Priority Questions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Revision Filter</span>
+        </button>
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn" onclick="window.print()" title="Print Section">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="content-area">
+      <div id="content-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">Section H: Git, CI/CD & Deployments</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Exhaustive, interview-ready guide covering all 12 questions (Questions 1 through 12, corresponding to master specifications 201–212) for 5-YOE Full Stack Developers. Focuses on Git commit graph mechanics, merge conflict resolution, CI/CD pipeline pipelines (GitHub Actions/Bitbucket), zero-downtime deployment strategies (Blue-Green vs Canary), OIDC secrets security, and backward-compatible database migrations.</p>
+        </div>
+
+        <div class="interactive-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <select id="filter-difficulty" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Difficulties</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select id="filter-status" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Questions</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+              <option value="bookmarked">Bookmarked</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);" id="results-count-text">Showing 12 of 12 questions</div>
+        </div>
+
+        <div id="questions-render-target"></div>
+      </div>
+
+      <aside id="context-rail">
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.75rem;">
+          Table of Contents
+        </div>
+        <div id="rail-topic-outline" style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.83rem;"></div>
+
+        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;">
+            5-YOE DevOps & CI/CD Insight
+          </div>
+          <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">
+            Senior candidates articulate <strong>trunk-based development</strong>, why <strong>rebasing shared public branches</strong> violates team invariants, and how <strong>expand-and-contract migrations</strong> ensure that newly deployed containers and rollback containers can coexist concurrently against the live database without schema corruption.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const CICD_QUESTIONS = [
+      {
+        id: "git-01",
+        num: 1,
+        origSpecNum: 201,
+        title: "Explain the differences between merge and rebase",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Git merge integrates branches by creating a non-destructive three-way merge commit with two parent pointers, preserving the exact historical timeline and branch context. Git rebase rewrites project history by taking the unique commits from your feature branch and replaying them on top of the target branch, producing a clean, linear commit history. The golden rule is: never rebase commits that have already been pushed to a shared public or main branch, because rewriting commit hashes forces collaborators to manually resolve Divergent branch states.",
+        explanation: "Merge preserves the true historical timeline of when commits were authored and integrated, but can clutter git log graphs with redundant merge commits ('Merge branch feature into main'). Rebase provides an easy-to-read, linear commit history ideal for bisecting regressions, but changes commit SHAs and alters commit timestamps.",
+        table: {
+          headers: ["Attribute", "Git Merge", "Git Rebase"],
+          rows: [
+            ["Commit History", "Non-linear; preserves all branch lifespans and historical merge points", "Linear; rewrites commit hashes onto the tip of the target branch"],
+            ["Commit Modification", "Preserves original commit SHAs, timestamps, and authors", "Creates brand new commits with new SHAs and current timestamps"],
+            ["Conflict Handling", "Conflicts resolved once during the final merge commit", "Conflicts resolved sequentially commit-by-commit during replay"],
+            ["Safety Rule", "Safe for public, shared, and production branches", "Only safe for private, local, un-pushed feature branches"]
+          ]
+        },
+        code: `# 1. Merge workflow (preserves exact history)
+git checkout main
+git merge feature-auth
+
+# 2. Rebase workflow (linear commit history)
+git checkout feature-auth
+git rebase main
+# If conflicts occur, fix files and run:
+git add .
+git rebase --continue
+# Integrate cleanly onto main via fast-forward:
+git checkout main
+git merge --ff-only feature-auth`,
+        followUps: [
+          { q: "What is a Fast-Forward merge?", a: "A fast-forward merge occurs when there are no divergent commits on the target branch since the feature branch diverged; Git simply moves the target branch pointer forward to the tip of the feature branch without creating a merge commit." },
+          { q: "What does 'git merge --squash' do?", a: "It condenses all commits from the feature branch into a single staged change on the target branch, allowing you to create one clean summary commit without preserving intermediate WIP commits." }
+        ]
+      },
+      {
+        id: "git-02",
+        num: 2,
+        origSpecNum: 202,
+        title: "How do you resolve merge conflicts safely?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Resolving merge conflicts safely requires an intentional, isolated process: 1) First ensure your working tree is clean using git status or git stash. 2) Rebase or merge the latest upstream main branch into your local branch to surface conflicts locally, not in the production pull request. 3) Inspect conflicted files delineated by conflict markers (<<<<<<< HEAD, =======, >>>>>>> branch). 4) Use a three-way diff merge tool (VS Code or git mergetool) to understand the intent behind both changes. 5) Run automated unit and integration tests locally to verify that the combined resolution did not break business logic. 6) Stage the resolved files with git add and finalize the merge or continue the rebase.",
+        code: `# Step-by-step conflict resolution procedure
+git checkout main
+git pull origin main
+
+git checkout feature-payment
+git rebase main
+
+# Git alerts: CONFLICT (content): Merge conflict in app/services/billing.py
+# Open file, inspect markers:
+# <<<<<<< HEAD (Changes from main)
+# tax_rate = get_regional_tax(user.country)
+# =======
+# tax_rate = 0.18 # Changes from feature branch
+# >>>>>>> feature-payment
+
+# After manually editing and saving billing.py:
+git add app/services/billing.py
+pytest tests/unit/test_billing.py # Verify tests pass locally
+git rebase --continue`,
+        followUps: [
+          { q: "What should you do if a rebase conflict becomes hopelessly tangled?", a: "Run `git rebase --abort` to instantly reset your branch back to the clean state it was in before the rebase command began." }
+        ]
+      },
+      {
+        id: "git-03",
+        num: 3,
+        origSpecNum: 203,
+        title: "What is the difference between git revert and git reset?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "git revert is a safe, forward-moving operation that creates a new commit containing the exact inverse changes of a targeted commit, leaving previous Git history untouched; it is the correct way to undo changes on public, shared branches. git reset is a backward-looking operation that rewrites history by moving the branch pointer backward to an earlier commit. Reset has three modes: soft, mixed, and hard. Because reset alters history, using it on pushed branches causes divergent histories and requires dangerous forced pushes.",
+        table: {
+          headers: ["Command / Mode", "Moves HEAD", "Modifies Index (Staged)", "Modifies Working Directory", "Safe on Shared Branches?"],
+          rows: [
+            ["git revert <commit>", "Forward (New commit)", "Yes (Stages inverse changes)", "Yes", "Yes (Always preferred on main)"],
+            ["git reset --soft <commit>", "Backward", "No (Keeps files staged)", "No (Preserves local edits)", "No (Rewrites commit history)"],
+            ["git reset --mixed <commit>", "Backward", "Yes (Unstages files)", "No (Preserves local edits)", "No (Default reset mode)"],
+            ["git reset --hard <commit>", "Backward", "Yes (Discards index)", "Yes (Destroys uncommitted code)", "No (Destructive operation)"]
+          ]
+        },
+        code: `# 1. Safe production rollback on main branch
+git checkout main
+git revert c4b89a1 # Creates new commit undoing c4b89a1
+git push origin main
+
+# 2. Local cleanup before pushing (unstage and undo last local commit)
+git reset --soft HEAD~1 # Undoes commit, leaves code changes in staging area`,
+        followUps: [
+          { q: "If you accidentally run 'git reset --hard', can you recover lost commits?", a: "Yes, using `git reflog` to find the lost commit hash before it is garbage collected, and running `git reset --hard <reflog_hash>`." }
+        ]
+      },
+      {
+        id: "git-04",
+        num: 4,
+        origSpecNum: 204,
+        title: "How would you design a CI/CD pipeline for a Python + React application?",
+        diff: "advanced",
+        priority: true,
+        spoken: "A production CI/CD pipeline consists of two parallel CI validation tracks for frontend and backend, followed by artifact creation and staged deployment. On pull request: Python CI runs flake8/ruff linting, type checks via mypy, and tests via pytest with coverage reporting; simultaneously, React CI runs ESLint, Prettier, TypeScript typecheck, and Jest tests. On merge to main: Frontend assets are built and deployed to S3 with CloudFront cache invalidation; backend Docker images are built via multi-stage builds, scanned for vulnerabilities with Trivy, tagged with the git commit SHA, and pushed to Amazon ECR. Finally, the CD stage applies database migrations, updates ECS Fargate task definitions, and performs a rolling or blue-green deployment with automated health check monitoring.",
+        code: `# .github/workflows/ci-cd-pipeline.yml
+name: Production Full-Stack CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  backend-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - run: pip install -r backend/requirements.txt pytest ruff mypy
+      - run: ruff check backend/
+      - run: mypy backend/
+      - run: pytest backend/tests/
+
+  frontend-ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm --prefix frontend ci
+      - run: npm --prefix frontend run lint
+      - run: npm --prefix frontend test -- --watchAll=false
+      - run: npm --prefix frontend run build`,
+        followUps: [
+          { q: "How do you ensure dependencies are cached efficiently across CI runs?", a: "Use official actions with lockfile hashing (actions/setup-python with `cache: 'pip'` and actions/setup-node with `cache: 'npm'`) to avoid downloading packages on every run." }
+        ]
+      },
+      {
+        id: "git-05",
+        num: 5,
+        origSpecNum: 205,
+        title: "What checks should run before deployment? (Quality & Security Gates)",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Before code can reach production, it must pass five mandatory quality and security gates: 1) Static Code Analysis: Linters (Ruff, ESLint) and typecheckers (mypy, tsc) to catch syntax and type violations. 2) Automated Automated Test Suites: Unit tests, service integration tests, and contract tests with a minimum code coverage threshold (e.g. 80%). 3) Dependency & Vulnerability Scans: Checking for known CVEs in third-party libraries using pip-audit, npm audit, or Snyk. 4) Static Application Security Testing (SAST) & Secret Detection: Scanning commit diffs for leaked API keys, tokens, or private certs using Gitleaks or TruffleHog. 5) Container Vulnerability Scanning: Scanning final Docker images using Trivy or AWS Inspector to block base OS vulnerabilities before registry push.",
+        table: {
+          headers: ["Quality Gate", "Tooling Example", "Failure Criteria"],
+          rows: [
+            ["Static Formatting & Linting", "Ruff, Prettier, ESLint", "Any styling violations or unformatted code"],
+            ["Type Soundness", "Mypy (Python), TSC (React/TS)", "Any strict type errors"],
+            ["Test Validation", "Pytest, Jest, React Testing Library", "Any test failure or coverage drop below 80%"],
+            ["Secret Scanning", "Gitleaks, TruffleHog", "Detection of any credentials, private keys, or tokens in commit diffs"],
+            ["Image Vulnerabilities", "Trivy, AWS ECR Enhanced Scan", "Any CVE with severity HIGH or CRITICAL without waiver"]
+          ]
+        }
+      },
+      {
+        id: "git-06",
+        num: 6,
+        origSpecNum: 206,
+        title: "How do you handle environment-specific configurations across development, staging, and production?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "We follow Twelve-Factor App principles: configuration is strictly separated from code. The application build artifacts (Docker images and React bundles) remain identical across all environments. Configuration values are injected dynamically at runtime via environment variables. For backend containers in AWS, we use AWS Systems Manager Parameter Store for non-sensitive values and AWS Secrets Manager for encrypted credentials (database passwords, API keys). In React, runtime configurations are loaded via a dynamic runtime config endpoint (/config.json) or injected as window.__APP_CONFIG__ at container boot time rather than hardcoded at compile time.",
+        followUps: [
+          { q: "Why should you avoid using .env files baked into frontend production builds?", a: "React bundles built via Vite or Webpack replace `process.env` variables with hardcoded strings at build time, requiring a full rebuild to change an API endpoint URL." }
+        ]
+      },
+      {
+        id: "git-07",
+        num: 7,
+        origSpecNum: 207,
+        title: "What is the difference between blue-green and canary deployment strategies?",
+        diff: "advanced",
+        priority: true,
+        spoken: "In Blue-Green deployment, you maintain two identical production environments: Blue runs the current live version, and Green runs the newly deployed version. Once the Green environment passes synthetic smoke tests, the load balancer or router switches 100% of user traffic from Blue to Green instantly. In Canary deployment, you route a small percentage of real production traffic (e.g., 5% or 10%) to the new version while the rest remains on the old version. You monitor CloudWatch error rates and latency on the canary instance; if metrics remain healthy, traffic is incrementally promoted to 100%.",
+        table: {
+          headers: ["Dimension", "Blue-Green Deployment", "Canary Deployment"],
+          rows: [
+            ["Traffic Shift", "All-at-once (100% flip via ALB/DNS)", "Incremental (e.g., 5% -> 25% -> 50% -> 100%)"],
+            ["Infrastructure Cost", "Requires 2x full infrastructure capacity during release", "Minimal extra capacity (only 1 or 2 canary tasks)"],
+            ["Blast Radius", "Higher (100% of users hit new version on switch)", "Minimal (Only a tiny fraction of users exposed to bugs)"],
+            ["Rollback Mechanism", "Instantaneous (Flip load balancer back to Blue)", "Immediate (Reroute 100% traffic back to stable baseline)"]
+          ]
+        },
+        followUps: [
+          { q: "What is the primary architectural challenge shared by both Blue-Green and Canary deployments?", a: "Database schema compatibility: the database must support both the old and new application versions concurrently without breaking either." }
+        ]
+      },
+      {
+        id: "git-08",
+        num: 8,
+        origSpecNum: 208,
+        title: "How would you roll back a failed deployment?",
+        diff: "advanced",
+        priority: true,
+        spoken: "A production rollback must be automated, predictable, and fast. In containerized environments like AWS ECS or Kubernetes, rollback does NOT mean compiling or rebuilding previous Git commits. Instead, it means immediately updating the orchestrator's service definition to point back to the previous known-good container image tag or task definition. In ECS, this is accomplished by updating the service to use the prior Task Definition revision via the AWS CLI or automated CloudWatch Alarm rollback actions. For frontend assets on S3, we point the CloudFront origin path back to the previous deployment folder and trigger an edge cache invalidation.",
+        code: `# 1. Instant ECS Service Rollback via AWS CLI
+aws ecs update-service \\
+  --cluster production-cluster \\
+  --service api-fastapi-service \\
+  --task-definition api-fastapi-task:42 \\
+  --force-new-deployment
+
+# 2. Automated ECS CloudWatch Alarm Rollback configuration:
+# ECS can automatically revert a deployment if CloudWatch 5xx alarm breaches 
+# within the deployment bake period (e.g., 10 minutes).`,
+        followUps: [
+          { q: "What should you do if a failed deployment included a database migration?", a: "If the migration followed the expand-and-contract pattern, the database is backward-compatible with the old code, allowing immediate rollback without database intervention." }
+        ]
+      },
+      {
+        id: "git-09",
+        num: 9,
+        origSpecNum: 209,
+        title: "How do you protect secrets and deployment credentials in GitHub Actions or Bitbucket Pipelines?",
+        diff: "advanced",
+        priority: true,
+        spoken: "The modern industry standard is to eliminate long-lived access keys entirely by using OpenID Connect (OIDC) federation. Instead of storing permanent AWS_ACCESS_KEY_ID credentials in GitHub repository secrets, GitHub Actions requests a short-lived OIDC JSON Web Token. AWS IAM validates the token using an IAM OpenID Connect Identity Provider and grants temporary, scoped STS credentials via an assumed IAM role. For application environment variables, we store them in GitHub Encrypted Environment Secrets scoped to protected environments that require manual approval from senior engineers before running on production branches.",
+        code: `# Passwordless AWS Authentication using OIDC in GitHub Actions
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write # Required for requesting the OIDC JWT
+      contents: read
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsDeploymentRole
+          aws-region: ap-south-1
+          audience: sts.amazonaws.com
+      - run: aws ecs update-service --cluster prod --service api --force-new-deployment`,
+        followUps: [
+          { q: "Why is OIDC superior to storing static IAM credentials in repository secrets?", a: "Static keys can be exfiltrated, do not expire automatically, and require manual rotation. OIDC tokens are ephemeral (valid for minutes) and scoped exclusively to specific repos and branches." }
+        ]
+      },
+      {
+        id: "git-10",
+        num: 10,
+        origSpecNum: 210,
+        title: "How would you ensure that a deployment does not proceed if integration tests fail?",
+        diff: "intermediate",
+        priority: false,
+        spoken: "In CI/CD pipeline orchestration, we enforce strict dependency chains using job dependencies (such as 'needs' in GitHub Actions or sequential stages in Bitbucket). The deployment job is explicitly configured to depend on the successful execution of the integration-test job. If any test assertion fails or returns a non-zero exit code, the integration job fails, and the pipeline engine automatically cancels all downstream deployment jobs. Furthermore, repository branch protection rules enforce that the integration test status check must report 'Success' before a pull request can be merged into the main branch.",
+        code: `# Enforcing strict execution order in GitHub Actions
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - run: pytest tests/unit
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests # Only runs if unit tests pass
+    steps:
+      - run: pytest tests/integration
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: integration-tests # BLOCKED if integration tests fail!
+    steps:
+      - run: ./scripts/deploy-ecs.sh`,
+        followUps: [
+          { q: "How do you run integration tests in CI without mocking databases?", a: "Use Docker Compose or Testcontainers within the CI runner to spin up real, ephemeral MongoDB or PostgreSQL containers on the loopback network for the duration of the test run." }
+        ]
+      },
+      {
+        id: "git-11",
+        num: 11,
+        origSpecNum: 211,
+        title: "What is infrastructure as code (IaC), and why is it useful?",
+        diff: "beginner",
+        priority: false,
+        spoken: "Infrastructure as Code (IaC) is the practice of provisioning and managing cloud infrastructure—such as VPCs, ECS clusters, load balancers, and S3 buckets—using declarative configuration files (like Terraform, AWS CloudFormation, or AWS CDK) rather than manual console clicks. It provides: 1) Reproducibility: Identical environments (staging, production, disaster recovery) can be spun up reliably without human error. 2) Version Control: Every infrastructure change is tracked in Git, reviewed via pull requests, and auditable. 3) State Management: Tools like Terraform maintain a state file to calculate execution plans, showing exactly what resources will be created, updated, or destroyed before applying changes.",
+        followUps: [
+          { q: "What is the difference between declarative and imperative IaC?", a: "Declarative (Terraform) defines the desired end state, and the engine figures out how to reach it. Imperative (scripts, AWS CLI) specifies the explicit sequence of execution commands." }
+        ]
+      },
+      {
+        id: "git-12",
+        num: 12,
+        origSpecNum: 212,
+        title: "How do you handle database migrations during application deployments?",
+        diff: "advanced",
+        priority: true,
+        spoken: "Database migrations must be decoupled from application code deployments using the Expand and Contract (Parallel Run) pattern to ensure zero downtime and safe rollbacks. You never drop or rename a column in a single release. Instead: 1) Expand: Deploy a backward-compatible migration adding the new column or collection; deploy application code that reads the old column while writing to both. 2) Migrate: Run a background batch worker to backfill legacy data. 3) Contract: Update the application to write exclusively to the new column, and finally run a cleanup migration to drop the old column. In the CI/CD pipeline, migrations run as a pre-deployment step (e.g. an ephemeral ECS task or Kubernetes Job) before new application containers receive live traffic.",
+        table: {
+          headers: ["Phase", "Database State", "Application Behavior", "Rollback Safety"],
+          rows: [
+            ["Phase 1: Expand", "Add new column `full_name` (allow null)", "App reads `first_name`, writes both `first_name` and `full_name`", "100% Safe (Old app runs without errors)"],
+            ["Phase 2: Backfill", "Both columns populated", "Background task copies historical data into `full_name`", "100% Safe"],
+            ["Phase 3: Switch", "Both columns exist", "App code deployed reading and writing only `full_name`", "Safe (Can revert app to Phase 1)"],
+            ["Phase 4: Contract", "Drop legacy `first_name` column", "App relies entirely on `full_name`", "Finalized (Point of no return)"]
+          ]
+        },
+        followUps: [
+          { q: "Why should you never execute database migrations inside the main container startup script?", a: "If multiple autoscaling container replicas launch concurrently, they will execute the migration simultaneously, causing database schema lock deadlocks and corrupted migration version tables." }
+        ]
+      }
+    ];
+
+    const State = {
+      theme: localStorage.getItem("fstk_theme") || "light",
+      completed: JSON.parse(localStorage.getItem("fstk_cicd_completed") || "[]"),
+      bookmarked: JSON.parse(localStorage.getItem("fstk_cicd_bookmarked") || "[]"),
+      revisionOnly: false,
+      filterDiff: "all",
+      filterStatus: "all",
+      searchQuery: ""
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(State.theme);
+      renderNavigation();
+      renderQuestions();
+      updateProgress();
+      bindEvents();
+    });
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fstk_theme", theme);
+      State.theme = theme;
+    }
+
+    function bindEvents() {
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        applyTheme(State.theme === "light" ? "dark" : "light");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+          e.preventDefault();
+          document.getElementById("global-search-input").focus();
+        }
+      });
+
+      document.getElementById("global-search-input").addEventListener("input", (e) => {
+        State.searchQuery = e.target.value.toLowerCase().trim();
+        renderQuestions();
+      });
+
+      document.getElementById("filter-difficulty").addEventListener("change", (e) => {
+        State.filterDiff = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("filter-status").addEventListener("change", (e) => {
+        State.filterStatus = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("revision-mode-toggle").addEventListener("click", (e) => {
+        State.revisionOnly = !State.revisionOnly;
+        e.currentTarget.classList.toggle("btn-primary", State.revisionOnly);
+        renderQuestions();
+      });
+
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("mobile-menu-toggle").addEventListener("click", () => sidebar.classList.toggle("open"));
+      document.getElementById("sidebar-close-btn").addEventListener("click", () => sidebar.classList.remove("open"));
+    }
+
+    function renderNavigation() {
+      const container = document.getElementById("sidebar-nav-container");
+      container.innerHTML = '<div class="nav-section-title">All 12 CI/CD Questions</div>';
+
+      CICD_QUESTIONS.forEach(q => {
+        const item = document.createElement("a");
+        item.className = "nav-item";
+        item.href = `#${q.id}`;
+        item.innerHTML = `
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">${q.num}. ${q.title}</span>
+          <span id="badge-${q.id}" class="nav-badge">${State.completed.includes(q.id) ? '✓' : ''}</span>
+        `;
+        item.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById("sidebar").classList.remove("open");
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuestions() {
+      const target = document.getElementById("questions-render-target");
+      const rail = document.getElementById("rail-topic-outline");
+      target.innerHTML = "";
+      rail.innerHTML = "";
+
+      let filtered = CICD_QUESTIONS.filter(q => {
+        if (State.revisionOnly && !q.priority) return false;
+        if (State.filterDiff !== "all" && q.diff !== State.filterDiff) return false;
+
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        if (State.filterStatus === "completed" && !isDone) return false;
+        if (State.filterStatus === "incomplete" && isDone) return false;
+        if (State.filterStatus === "bookmarked" && !isMarked) return false;
+
+        if (State.searchQuery) {
+          const matchTitle = q.title.toLowerCase().includes(State.searchQuery);
+          const matchSpoken = q.spoken.toLowerCase().includes(State.searchQuery);
+          const matchCode = q.code && q.code.toLowerCase().includes(State.searchQuery);
+          if (!matchTitle && !matchSpoken && !matchCode) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById("results-count-text").innerText = `Showing ${filtered.length} of ${CICD_QUESTIONS.length} questions`;
+
+      if (filtered.length === 0) {
+        target.innerHTML = `
+          <div class="view-card" style="text-align:center; padding:3rem;">
+            <p style="color:var(--text-muted);">No questions match your current search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(q => {
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        const railLink = document.createElement("a");
+        railLink.href = `#${q.id}`;
+        railLink.style.cssText = "color:var(--text-muted); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;";
+        railLink.innerText = `${q.num}. ${q.title}`;
+        rail.appendChild(railLink);
+
+        const card = document.createElement("article");
+        card.className = "view-card";
+        card.id = q.id;
+
+        card.innerHTML = `
+          <div class="q-meta">
+            <span class="tag tag-diff-${q.diff}">${q.diff}</span>
+            <span class="tag tag-topic">Question ${q.num} of 12 (Spec #${q.origSpecNum})</span>
+            ${q.priority ? '<span class="tag" style="background:#EEF2FF; color:#4568E8;">★ High Priority</span>' : ''}
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">Target: 60-90s spoken</span>
+          </div>
+
+          <h2 class="q-title">${q.num}. ${q.title}</h2>
+
+          <div class="q-section-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Interview-Ready Spoken Answer
+          </div>
+          <div class="callout-box">
+            <p><strong>"${escapeHTML(q.spoken)}"</strong></p>
+          </div>
+
+          ${q.explanation ? `
+            <div class="q-section-heading">CI/CD & DevOps Architectural Internals</div>
+            <p style="font-size:0.93rem; color:var(--text-main); margin-bottom:1rem;">${escapeHTML(q.explanation)}</p>
+          ` : ''}
+
+          ${q.table ? `
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>${q.table.headers.map(h => `<th>${escapeHTML(h)}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${q.table.rows.map(r => `<tr>${r.map(c => `<td>${escapeHTML(c)}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          ${q.code ? `
+            <div class="code-container">
+              <div class="code-header">
+                <span>Production Pipeline YAML / Shell Script</span>
+                <button class="btn btn-ghost" style="color:#FFF; padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="copyCode(this)">Copy Snippet</button>
+              </div>
+              <pre><code>${escapeHTML(q.code)}</code></pre>
+            </div>
+          ` : ''}
+
+          ${q.followUps && q.followUps.length > 0 ? `
+            <div class="q-section-heading">Likely Interviewer Follow-Ups</div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+              ${q.followUps.map(f => `
+                <div style="background:var(--bg-primary); padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.875rem;">
+                  <strong style="color:var(--text-main); display:block; margin-bottom:0.25rem;">Q: ${escapeHTML(f.q)}</strong>
+                  <span style="color:var(--text-muted);">A: ${escapeHTML(f.a)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="btn-action-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn ${isDone ? 'btn-primary' : ''}" onclick="toggleCompleted('${q.id}')">
+                ${isDone ? '✓ Completed' : 'Mark as Completed'}
+              </button>
+              <button class="btn" onclick="toggleBookmarked('${q.id}')">
+                ${isMarked ? '★ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ID: <code>${q.id}</code>
+            </div>
+          </div>
+        `;
+
+        target.appendChild(card);
+      });
+    }
+
+    function toggleCompleted(id) {
+      if (State.completed.includes(id)) {
+        State.completed = State.completed.filter(x => x !== id);
+      } else {
+        State.completed.push(id);
+      }
+      localStorage.setItem("fstk_cicd_completed", JSON.stringify(State.completed));
+      updateProgress();
+      renderQuestions();
+      renderNavigation();
+    }
+
+    function toggleBookmarked(id) {
+      if (State.bookmarked.includes(id)) {
+        State.bookmarked = State.bookmarked.filter(x => x !== id);
+      } else {
+        State.bookmarked.push(id);
+      }
+      localStorage.setItem("fstk_cicd_bookmarked", JSON.stringify(State.bookmarked));
+      renderQuestions();
+    }
+
+    function copyCode(btn) {
+      const code = btn.closest(".code-container").querySelector("code").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy Snippet", 2000);
+      });
+    }
+
+    function updateProgress() {
+      const total = CICD_QUESTIONS.length;
+      const done = State.completed.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("section-progress-bar").style.width = `${pct}%`;
+      document.getElementById("section-progress-label").innerText = `${done}/${total} (${pct}%)`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

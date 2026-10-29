@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section D: React, JavaScript, HTML5 & CSS — Complete 5 YOE Full-Stack Guide</title>
+  <style>
+    :root {
+      --bg-primary: #F6F8FC;
+      --surface: #FFFFFF;
+      --sidebar-bg: #17243A;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #172033;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --warning-bg: #FFF7E6;
+      --warning-text: #B45309;
+      --success-bg: #EAF8F0;
+      --success-text: #0F766E;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #64748B;
+      --sidebar-active: #F8FAFC;
+      --primary: #6384F9;
+      --primary-hover: #4568E8;
+      --secondary: #14B8A6;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #1E293B;
+      --code-bg: #050811;
+      --code-text: #F8FAFC;
+      --warning-bg: #2C1E04;
+      --warning-text: #FBBF24;
+      --success-bg: #062D24;
+      --success-text: #34D399;
+      --danger-bg: #361010;
+      --danger-text: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; }
+
+    #sidebar { width: 330px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.25s ease; border-right: 1px solid var(--border); }
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    #content-area { flex: 1; display: flex; overflow-y: auto; scroll-behavior: smooth; }
+    #content-stage { flex: 1; padding: 2rem 3rem; max-width: 1080px; margin: 0 auto; width: 100%; }
+    #context-rail { width: 280px; padding: 1.75rem 1.25rem; border-left: 1px solid var(--border); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+
+    header.top-bar { background: var(--surface); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; flex-shrink: 0; z-index: 30; }
+    .search-wrapper { position: relative; width: 440px; }
+    .search-input { width: 100%; padding: 0.5rem 2.2rem 0.5rem 2.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-main); font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(69, 104, 232, 0.2); }
+    .search-kbd { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; padding: 0.15rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono); }
+    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-muted); fill: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); transition: all 0.15s; }
+    .btn:hover { background: var(--bg-primary); }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-ghost { background: transparent; border-color: transparent; }
+
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .view-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); scroll-margin-top: 1.5rem; }
+    .q-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-diff-beginner { background: var(--success-bg); color: var(--success-text); }
+    .tag-diff-intermediate { background: var(--warning-bg); color: var(--warning-text); }
+    .tag-diff-advanced { background: var(--danger-bg); color: var(--danger-text); }
+    .tag-topic { background: var(--bg-primary); color: var(--text-muted); border: 1px solid var(--border); }
+    
+    .q-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.35; }
+    .q-section-heading { font-size: 0.88rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .callout-box { background: var(--bg-primary); border-left: 4px solid var(--primary); padding: 1.1rem 1.3rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 0.75rem 0 1.25rem; font-size: 0.95rem; }
+    .callout-box p { margin-bottom: 0.5rem; }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .code-container { background: var(--code-bg); border-radius: var(--radius); margin: 1.1rem 0; overflow: hidden; border: 1px solid #1E293B; }
+    .code-header { background: #1E293B; padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: #94A3B8; }
+    pre { padding: 1rem 1.2rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.86rem; color: var(--code-text); line-height: 1.55; }
+
+    .table-container { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left; }
+    th { background: var(--bg-primary); padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .mobile-menu-btn { display: none; }
+    @media (max-width: 1024px) {
+      #context-rail { display: none; }
+      #content-stage { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-menu-btn { display: inline-flex; }
+      .search-wrapper { width: 180px; }
+      #content-stage { padding: 1rem; }
+    }
+
+    @media print {
+      body { height: auto; overflow: visible; background: #FFF; color: #000; }
+      #sidebar, header.top-bar, #context-rail, .interactive-toolbar, .btn-action-group { display: none !important; }
+      #main-container, #content-area, #content-stage { overflow: visible !important; width: 100% !important; padding: 0 !important; }
+      .view-card { border: none !important; box-shadow: none !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Prep</span>
+      </div>
+      <button class="btn btn-ghost" id="sidebar-close-btn" style="color:#FFF; display:none;">✕</button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>Section D Completion</span>
+        <span id="section-progress-label">0/51 (0%)</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="section-progress-bar" style="width:0%; height:100%; background:var(--primary); transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Jump to Question</div>
+      <!-- Injected via JS -->
+    </nav>
+  </aside>
+
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="global-search-input" class="search-input" placeholder="Search React, JS internals, CSS Grid, HTML5..." autocomplete="off">
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="revision-mode-toggle" title="Show High Priority Questions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Revision Filter</span>
+        </button>
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn" onclick="window.print()" title="Print Section">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="content-area">
+      <div id="content-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">Section D: React, JavaScript, HTML5 & CSS</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Exhaustive, interview-ready guide covering all 51 core frontend questions for 5-YOE Full Stack Developers. Details Fiber reconciliation, hook internals, event loop microtasks/macrotasks, prototype chains, closures, CSS Grid/Flexbox layouts, Core Web Vitals, accessible forms, and production performance tuning.</p>
+        </div>
+
+        <div class="interactive-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <select id="filter-difficulty" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Difficulties</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select id="filter-status" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Questions</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+              <option value="bookmarked">Bookmarked</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);" id="results-count-text">Showing 51 of 51 questions</div>
+        </div>
+
+        <div id="questions-render-target"></div>
+      </div>
+
+      <aside id="context-rail">
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.75rem;">
+          Table of Contents
+        </div>
+        <div id="rail-topic-outline" style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.83rem;"></div>
+
+        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;">
+            5-YOE Senior Insight
+          </div>
+          <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">
+            Senior candidates distinguish between <strong>render triggers</strong> and <strong>DOM mutations</strong>. Frame React discussions around the reconciliation phase versus the commit phase, and articulate the microtask queue mechanics in V8 when discussing promises and rendering waterfalls.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const FRONTEND_QUESTIONS = [
+      {
+        id: "fe-01",
+        num: 1,
+        title: "Functional versus Class Components: Architecture and Lifecycle",
+        diff: "beginner",
+        priority: false,
+        spoken: "Class components rely on ES6 classes inheriting from React.Component, managing state on 'this.state' and using imperative lifecycle methods like componentDidMount and componentDidUpdate. Functional components are plain JavaScript functions that capture props and state in closures, using React Hooks to manage lifecycles. Functional components eliminate 'this' binding pitfalls, enable better tree-shaking, allow custom hook composition, and are the foundational standard for React 18+ concurrent rendering.",
+        table: {
+          headers: ["Attribute", "Functional Components (Hooks)", "Class Components"],
+          rows: [
+            ["State Handling", "useState, useReducer (per-primitive closures)", "Single merged this.state object"],
+            ["Lifecycle Model", "Synchronized effects (useEffect) based on deps", "Imperative lifecycles (componentDidMount, etc.)"],
+            ["Code Reuse", "Custom Hooks (composable functions)", "Higher-Order Components (HOCs) & Render Props"],
+            ["'this' Keyword", "None; plain lexical scoping", "Required; manual .bind(this) or arrow wrappers"],
+            ["Concurrent Features", "Full support (useTransition, Suspense)", "Limited / Deprecated legacy APIs"]
+          ]
+        }
+      },
+      {
+        id: "fe-02",
+        num: 2,
+        title: "React Rendering Pipeline and Causes of Re-renders",
+        diff: "intermediate",
+        priority: true,
+        spoken: "A component re-renders when: 1) Its internal state changes, 2) Its parent component re-renders, 3) A consumed Context value updates, or 4) Its custom hooks trigger an update. Rendering is split into two phases: the Render phase, which calls component functions to construct a new Fiber tree and diffs it against the current tree without mutating the real DOM; and the Commit phase, where React applies the calculated DOM changes synchronously and runs layout effects.",
+        explanation: "A common misunderstanding is that prop changes cause re-renders. In reality, when a parent re-renders, React recursively re-renders all child components by default, regardless of whether their props changed, unless the child is memoized using React.memo.",
+        followUps: [
+          { q: "Does re-rendering a component always cause a real browser DOM update?", a: "No. Re-rendering runs the component function to generate a virtual representation. If the reconciliation diff identifies zero DOM attribute or text changes, the real DOM is untouched." }
+        ]
+      },
+      {
+        id: "fe-03",
+        num: 3,
+        title: "Deep Dive into Core Hooks: useState, useEffect, useMemo, useCallback, useRef",
+        diff: "intermediate",
+        priority: true,
+        spoken: "useState manages reactive local state. useEffect handles side-effects after the commit phase. useMemo caches the result of an expensive calculation across renders. useCallback caches a function definition across renders to preserve referential equality for memoized children. useRef creates a mutable container object with a persistent .current property that does not trigger a re-render when mutated.",
+        code: `import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+
+export function DashboardWidget({ items, onSelect }) {
+  const [filter, setFilter] = useState('');
+  const renderCount = useRef(0);
+  renderCount.current += 1; // Mutating ref does not re-render
+
+  // 1. useMemo: Caches filtered data array
+  const filteredItems = useMemo(() => {
+    return items.filter(item => item.name.toLowerCase().includes(filter.toLowerCase()));
+  }, [items, filter]);
+
+  // 2. useCallback: Preserves referential equality of handler
+  const handleItemClick = useCallback((id) => {
+    onSelect(id);
+  }, [onSelect]);
+
+  // 3. useEffect: Handles non-UI side effect
+  useEffect(() => {
+    document.title = \`\${filteredItems.length} items loaded\`;
+  }, [filteredItems.length]);
+
+  return <div>{/* Render elements */}</div>;
+}`
+      },
+      {
+        id: "fe-04",
+        num: 4,
+        title: "useEffect Dependency Arrays and Exhaustive-Deps Rules",
+        diff: "intermediate",
+        priority: true,
+        spoken: "The dependency array tells React when to re-synchronize the effect. An omitted array runs after every render. An empty array runs once after initial mount. An array with values runs whenever any dependency changes by Object.is equality. We must never suppress the eslint react-hooks/exhaustive-deps rule: omitting reactive values like props or state causes stale closures and subtle synchronization bugs.",
+        followUps: [
+          { q: "What is the effect cleanup function?", a: "A function returned from useEffect that runs before the effect re-executes and when the component unmounts, used for clearing timers, aborting fetch requests, or unsubscribing from sockets." }
+        ]
+      },
+      {
+        id: "fe-05",
+        num: 5,
+        title: "Stale Closures in React Hooks: Diagnosis and Remediation",
+        diff: "advanced",
+        priority: true,
+        spoken: "A stale closure occurs when an asynchronous callback, event handler, or effect closes over state or prop variables from an earlier render cycle. Because the closure references the old scope, it reads outdated data. We resolve stale closures by: 1) Passing functional state updates (e.g., setCount(prev => prev + 1)), 2) Adding all closed-over values to the dependency array, or 3) Storing mutable values in a useRef container.",
+        code: `// BUG: Stale closure in setInterval
+useEffect(() => {
+  const id = setInterval(() => {
+    // 'count' is locked at 0 from the initial render closure
+    setCount(count + 1); 
+  }, 1000);
+  return () => clearInterval(id);
+}, []); // Empty deps causes stale closure
+
+// FIX: Functional updater accesses the latest internal state
+useEffect(() => {
+  const id = setInterval(() => {
+    setCount(prev => prev + 1);
+  }, 1000);
+  return () => clearInterval(id);
+}, []);`
+      },
+      {
+        id: "fe-06",
+        num: 6,
+        title: "Avoiding Direct State Mutation and Immutability Guarantees",
+        diff: "beginner",
+        priority: true,
+        spoken: "React relies on shallow reference equality checks (Object.is) to determine if state has changed. If you mutate an existing array or object directly (e.g. data.push() or user.name = 'x'), the memory reference remains identical. React skips the re-render because it assumes no change occurred. Mutating state directly can also corrupt time-travel debugging and cause child memoization to break.",
+        code: `// WRONG: Direct mutation fails re-render
+const [tags, setTags] = useState(['react', 'js']);
+tags.push('css');
+setTags(tags); // Object.is(tags, tags) === true -> Skipped!
+
+// CORRECT: Immutable copy with spread operator
+setTags([...tags, 'css']);`
+      },
+      {
+        id: "fe-07",
+        num: 7,
+        title: "Controlled versus Uncontrolled Inputs and Form Architecture",
+        diff: "beginner",
+        priority: false,
+        spoken: "Controlled components have their input value driven by React state via the 'value' and 'onChange' props, making React the single source of truth for immediate validation and conditional rendering. Uncontrolled components store their value directly in the browser DOM, and React accesses them on demand using a useRef. Uncontrolled forms (such as React Hook Form) offer better performance on massive forms because typing does not trigger parent re-renders.",
+        table: {
+          headers: ["Attribute", "Controlled Inputs", "Uncontrolled Inputs"],
+          rows: [
+            ["Source of Truth", "React state (memory)", "Browser DOM node"],
+            ["Re-renders", "Re-renders on every keystroke", "Zero re-renders during typing"],
+            ["Validation", "Instant, keystroke-by-keystroke", "On submit or on blur via refs"],
+            ["Ideal Use Case", "Dynamic dependent inputs, search filters", "Large high-volume forms, file upload inputs"]
+          ]
+        }
+      },
+      {
+        id: "fe-08",
+        num: 8,
+        title: "React List Keys: Reconciliation and the Dangers of Index as Key",
+        diff: "intermediate",
+        priority: true,
+        spoken: "During reconciliation, React uses keys to match existing Fiber nodes between renders. Using array indexes as keys causes bugs when items are reordered, inserted, or deleted from the beginning: React matches items by index position rather than identity, reusing the old DOM state and un-mounting child components incorrectly. Keys must be stable, unique, and predictable IDs from the dataset.",
+        followUps: [
+          { q: "When is using array index as key acceptable?", a: "Only when the list is strictly static, never reordered or filtered, and items have no local state or form inputs." }
+        ]
+      },
+      {
+        id: "fe-09",
+        num: 9,
+        title: "Prop Drilling vs Context API vs State Management Libraries (Zustand, Redux)",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Prop drilling is fine for passing data through 1–2 component levels. When state is needed across deep, unrelated component trees, we choose between Context and dedicated state libraries. React Context is designed for low-frequency updates like themes, locale, or authenticated user profiles, because any context change forces all consuming components to re-render. For high-frequency, granular state updates (e.g. shopping carts, collaborative canvases), we use external store managers like Zustand or Redux Toolkit, which support fine-grained selector-based subscriptions.",
+        table: {
+          headers: ["Solution", "Update Frequency", "Boilerplate", "Selective Subscriptions"],
+          rows: [
+            ["Prop Drilling", "Any", "High across deep hierarchies", "Manual passing"],
+            ["React Context", "Low (Auth, Theme, I18n)", "Minimal native API", "No (Consumer re-renders on any change)"],
+            ["Zustand", "High (Complex UI state)", "Extremely low", "Yes (useStore(state => state.field))"],
+            ["Redux Toolkit", "Enterprise / High", "Medium", "Yes via useSelector"]
+          ]
+        }
+      },
+      {
+        id: "fe-10",
+        num: 10,
+        title: "Performance Optimization: React.memo, useMemo, and useCallback",
+        diff: "intermediate",
+        priority: true,
+        spoken: "React.memo is a higher-order component that skips re-rendering if props have not changed by shallow equality. However, passing inline objects or arrow functions as props breaks React.memo because they create new references on every parent render. To make React.memo effective, we pair it with useCallback to stabilize function references and useMemo to stabilize object and array references.",
+        code: `const HeavyRow = React.memo(({ item, onDelete }) => {
+  return <button onClick={() => onDelete(item.id)}>{item.name}</button>;
+});
+
+export function ItemList({ items }) {
+  // useCallback prevents onDelete from breaking HeavyRow's React.memo
+  const handleDelete = useCallback((id) => {
+    apiClient.delete(\`/items/\${id}\`);
+  }, []);
+
+  return items.map(item => <HeavyRow key={item.id} item={item} onDelete={handleDelete} />);
+}`
+      },
+      {
+        id: "fe-11",
+        num: 11,
+        title: "API Calls in React: Loading States, Errors, and Request Cancellation",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Robust data fetching requires managing three core states: data, loading, and error. In useEffect, we must use an AbortController to cancel in-flight requests when the component unmounts or query parameters change. This prevents race conditions and memory leak warnings caused by trying to update state on an unmounted component.",
+        code: `useEffect(() => {
+  const controller = new AbortController();
+  async function loadData() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(\`/api/tickets?q=\${query}\`, { signal: controller.signal });
+      const data = await res.json();
+      setTickets(data);
+    } catch (err) {
+      if (err.name !== 'AbortError') setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+  loadData();
+  return () => controller.abort(); // Cancel pending network request
+}, [query]);`
+      },
+      {
+        id: "fe-12",
+        num: 12,
+        title: "Custom Hooks and Reusable Data-Fetching Logic",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Custom hooks are JavaScript functions whose names begin with 'use' and can invoke other React hooks. They encapsulate stateful logic—such as data fetching, window listeners, or local storage syncing—without altering the component hierarchy, decoupling business logic from UI rendering.",
+        code: `function useFetch(url) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch(url)
+      .then(res => res.json())
+      .then(d => { if (isMounted) setData(d); })
+      .catch(e => { if (isMounted) setError(e); })
+      .finally(() => { if (isMounted) setLoading(false); });
+    return () => { isMounted = false; };
+  }, [url]);
+
+  return { data, loading, error };
+}`
+      },
+      {
+        id: "fe-13",
+        num: 13,
+        title: "Error Boundaries and Their Execution Limitations",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Error Boundaries are React components that catch JavaScript errors anywhere in their child component tree, log the error, and display a fallback UI instead of crashing the entire application. They must be class components implementing componentDidCatch or getDerivedStateFromError. Crucially, Error Boundaries do NOT catch errors in: 1) Event handlers, 2) Asynchronous code (e.g. setTimeout or fetch), 3) Server-Side Rendering, or 4) Errors thrown in the boundary component itself.",
+        code: `class ErrorBoundary extends React.Component {
+  state = { hasError: false, error: null };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Uncaught error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) return <div>Something went wrong.</div>;
+    return this.props.children;
+  }
+}`
+      },
+      {
+        id: "fe-14",
+        num: 14,
+        title: "Lazy Loading, Code Splitting, and React Suspense",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Code splitting breaks a large single JavaScript bundle into smaller chunks loaded on demand. In React, we use React.lazy() with dynamic ES imports to load components only when they are rendered. We wrap lazy components in a React.Suspense boundary, which renders a fallback spinner while the chunk downloads over the network.",
+        code: `import React, { Suspense, lazy } from 'react';
+
+// Chunks downloaded only when route renders
+const AnalyticsDashboard = lazy(() => import('./AnalyticsDashboard'));
+
+export function App() {
+  return (
+    <Suspense fallback={<div className="spinner">Loading analytics...</div>}>
+      <AnalyticsDashboard />
+    </Suspense>
+  );
+}`
+      },
+      {
+        id: "fe-15",
+        num: 15,
+        title: "Client-Side Rendering (CSR) vs Server-Side Rendering (SSR) vs Static Generation (SSG)",
+        diff: "advanced",
+        priority: true,
+        spoken: "CSR downloads an empty HTML shell and bundles JavaScript, executing everything in the browser; it has poor initial page load and SEO, but fast subsequent navigation. SSR renders HTML on every request on the server, delivering fast First Contentful Paint and full SEO, but increases server load and time to interactive. SSG builds HTML pages once at compile time, serving them via CDNs with near-zero latency, making it ideal for static blogs and marketing pages.",
+        table: {
+          headers: ["Rendering Mode", "HTML Built At", "Server Load", "SEO Quality", "Initial Load Speed"],
+          rows: [
+            ["CSR (Standard React)", "Browser runtime", "Zero (Static CDN hosting)", "Poor without dynamic crawlers", "Slow on mobile / high JS bundle"],
+            ["SSR (Next.js getServerSideProps)", "Every request", "High (Node server executes per hit)", "Excellent", "Fast initial HTML delivery"],
+            ["SSG (Static Generation)", "Build / deploy time", "Zero (Cached on Edge CDN)", "Excellent", "Instantaneous"]
+          ]
+        }
+      },
+      {
+        id: "fe-16",
+        num: 16,
+        title: "Preventing Memory Leaks in React Effects",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Memory leaks in React occur when an unmounted component leaves behind active event listeners, uncancelled network subscriptions, running WebSockets, or uncleared intervals. The browser retains references to the component and its scope in memory. We prevent this by returning a cleanup function in useEffect that cleans up all resources.",
+        code: `useEffect(() => {
+  const onResize = () => setWidth(window.innerWidth);
+  window.addEventListener('resize', onResize);
+  
+  // Cleanup removes listener to prevent memory leak
+  return () => window.removeEventListener('resize', onResize);
+}, []);`
+      },
+      {
+        id: "fe-17",
+        num: 17,
+        title: "Frontend Authentication and Protected Routes Architecture",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Client-side route protection checks user authentication state (from Context or Redux) before rendering child routes. If unauthenticated, it redirects to the login route via a Navigate component, saving the current location in state for a post-login redirect. However, client-side route protection is purely for user experience: real security is enforced by backend API token validation.",
+        code: `import { Navigate, Outlet, useLocation } from 'react-router-dom';
+
+export function ProtectedRoutes({ user }) {
+  const location = useLocation();
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  return <Outlet />;
+}`
+      },
+      {
+        id: "fe-18",
+        num: 18,
+        title: "Rendering Thousands of Table Rows: Virtualization Patterns",
+        diff: "advanced",
+        priority: true,
+        spoken: "Mounting 10,000 table rows causes massive DOM bloat, high memory usage, and main-thread layout freezing. We solve this using list virtualization (react-window or tanstack-virtual). Virtualization calculates the user's current scroll viewport and only renders the visible DOM nodes (plus a small buffer), recycling elements as the user scrolls. This maintains consistent 60 FPS scrolling with constant O(1) DOM nodes.",
+        followUps: [
+          { q: "What is the difference between windowing and pagination?", a: "Pagination breaks data into discrete server pages; windowing keeps all loaded records accessible in continuous scroll while rendering only the visible viewport elements." }
+        ]
+      },
+      {
+        id: "fe-19",
+        num: 19,
+        title: "Accessibility (a11y) and Responsive Design Fundamentals",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Frontend accessibility means building web applications usable by everyone, including people using screen readers and keyboard navigation. We enforce WCAG 2.1 standards: semantic HTML tags (nav, main, button), proper ARIA roles and labels where visual icons are used, sufficient color contrast ratios (at least 4.5:1), visible focus rings for keyboard navigation, and responsive layouts that adapt cleanly from 320px mobile to 4K desktop screens.",
+        followUps: [
+          { q: "Why use native HTML buttons instead of a div with an onClick?", a: "Native buttons include built-in keyboard accessibility (Enter/Space activation), focusability, and screen-reader roles out of the box without needing custom tabindex or aria attributes." }
+        ]
+      },
+      {
+        id: "fe-20",
+        num: 20,
+        title: "Testing React Components Using React Testing Library (RTL)",
+        diff: "intermediate",
+        priority: true,
+        spoken: "React Testing Library encourages testing components the way users actually interact with them, rather than testing implementation details. We query elements by accessible roles and text (getByRole, getByText) instead of internal class names or component state. We simulate user interactions using userEvent, and assert on DOM visibility and accessibility attributes.",
+        code: `import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { Counter } from './Counter';
+
+test('increments counter when button is clicked', async () => {
+  render(<Counter />);
+  const button = screen.getByRole('button', { name: /increment/i });
+  await userEvent.click(button);
+  expect(screen.getByText(/count: 1/i)).toBeInTheDocument();
+});`
+      },
+      {
+        id: "fe-21",
+        num: 21,
+        title: "var versus let versus const: Scoping, Hoisting, and Temporal Dead Zone",
+        diff: "beginner",
+        priority: false,
+        spoken: "var is function-scoped, can be re-declared, and is hoisted with an initial value of undefined. let and const are block-scoped, cannot be re-declared within the same scope, and are hoisted without initialization into the Temporal Dead Zone (TDZ). Accessing a let or const variable before its declaration throws a ReferenceError. const also prevents variable reassignment, though nested objects remain mutable.",
+        code: `console.log(a); // undefined (hoisted with undefined)
+var a = 10;
+
+// Temporal Dead Zone demo:
+try {
+  console.log(b); // Throws ReferenceError: Cannot access 'b' before initialization
+  let b = 20;
+} catch (e) {
+  console.log(e.message);
+}`
+      },
+      {
+        id: "fe-22",
+        num: 22,
+        title: "JavaScript Closures: Lexical Scoping and Memory Mechanics",
+        diff: "intermediate",
+        priority: true,
+        spoken: "A closure is a function bundled together with references to its surrounding lexical scope. In JavaScript, inner functions retain access to outer function variables even after the outer function has returned. Closures enable data encapsulation (private variables), function factories, and memoization. They persist in memory until all references to the inner function are garbage collected.",
+        code: `function createBankWallet(initialBalance) {
+  let balance = initialBalance; // Private enclosed variable
+  return {
+    deposit: (amt) => { balance += amt; return balance; },
+    getBalance: () => balance
+  };
+}
+const wallet = createBankWallet(100);
+wallet.deposit(50);
+console.log(wallet.getBalance()); // 150
+// console.log(wallet.balance) -> undefined (encapsulated)`
+      },
+      {
+        id: "fe-23",
+        num: 23,
+        title: "JavaScript Event Loop: Call Stack, Web APIs, Microtasks, and Macrotasks",
+        diff: "advanced",
+        priority: true,
+        spoken: "JavaScript executes on a single-threaded call stack. Asynchronous operations run via Web APIs; when complete, their callbacks enter queues. The event loop prioritizes the Microtask queue (Promises, queueMicrotask, MutationObserver) over the Macrotask queue (setTimeout, setInterval, I/O). After every macrotask completes, the event loop drains the entire microtask queue before rendering or picking the next macrotask.",
+        code: `console.log('1: Sync');
+
+setTimeout(() => console.log('4: Macrotask'), 0);
+
+Promise.resolve()
+  .then(() => console.log('2: Microtask 1'))
+  .then(() => console.log('3: Microtask 2'));
+
+// Execution Order: 1 -> 2 -> 3 -> 4`
+      },
+      {
+        id: "fe-24",
+        num: 24,
+        title: "Promises versus async/await: Syntactic Sugar and Error Propagation",
+        diff: "beginner",
+        priority: false,
+        spoken: "Promises handle asynchronous computations using .then() and .catch() method chaining. async/await is syntactic sugar built on top of generators and promises, allowing asynchronous code to be written and read like synchronous code. async/await allows standard try/catch blocks for error handling, eliminating nested callback chains.",
+        followUps: [
+          { q: "What does an async function return if you return a plain number?", a: "It automatically wraps the return value in a resolved Promise (Promise.resolve(number))." }
+        ]
+      },
+      {
+        id: "fe-25",
+        num: 25,
+        title: "Promise Concurrency Methods: all, allSettled, race, and any",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Promise.all runs promises concurrently and rejects immediately if any single promise fails (fail-fast). Promise.allSettled waits for all promises to either resolve or reject, returning an array of their results and statuses. Promise.race settles as soon as the first promise settles (either resolves or rejects). Promise.any resolves as soon as the first promise resolves successfully, ignoring rejections unless all promises fail.",
+        table: {
+          headers: ["Method", "Resolves When", "Rejects When", "Use Case"],
+          rows: [
+            ["Promise.all", "All promises resolve", "Any single promise rejects", "All-or-nothing dependent parallel fetches"],
+            ["Promise.allSettled", "All promises settle", "Never rejects", "Batch background jobs where partial failure is okay"],
+            ["Promise.race", "First promise settles (resolve OR reject)", "First promise settles (resolve OR reject)", "Setting request timeouts"],
+            ["Promise.any", "First promise resolves", "All promises reject (AggregateError)", "Fastest mirror/CDN server selection"]
+          ]
+        }
+      },
+      {
+        id: "fe-26",
+        num: 26,
+        title: "The 'this' Keyword and Arrow Functions",
+        diff: "intermediate",
+        priority: true,
+        spoken: "In standard JavaScript functions, 'this' is bound dynamically at invocation time depending on how the function is called (default global, object method, or explicitly bound via call/apply/bind). Arrow functions do not have their own 'this'; they capture 'this' lexically from their surrounding enclosing scope at declaration time. Arrow functions also cannot be used as constructors.",
+        code: `const user = {
+  name: 'Dev',
+  printStandard: function() { console.log(this.name); },
+  printArrow: () => { console.log(this.name); }
+};
+user.printStandard(); // 'Dev' (this bound to user)
+user.printArrow();    // undefined (this resolved from outer lexical scope)`
+      },
+      {
+        id: "fe-27",
+        num: 27,
+        title: "Shallow Equality versus Deep Equality in JavaScript",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Shallow equality checks primitive values by value and objects by memory reference identity (Object.is). Deep equality recursively compares all nested properties and values across two object trees. React's default reconciliation uses shallow equality for performance reasons.",
+        code: `const a = { user: { id: 1 } };
+const b = { user: { id: 1 } };
+console.log(a === b); // false (different references)
+
+// Fast deep equality for JSON-safe structures:
+const isEqual = (x, y) => JSON.stringify(x) === JSON.stringify(y);`
+      },
+      {
+        id: "fe-28",
+        num: 28,
+        title: "Debouncing versus Throttling: Mechanics and Use Cases",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Debouncing delays function execution until a specific amount of time has passed since the last event trigger, resetting the timer on every call (ideal for search inputs and auto-saving). Throttling enforces a maximum execution frequency, running the function at most once per fixed time window (ideal for scroll listeners, window resizing, and mouse tracking).",
+        code: `// Debounce implementation
+function debounce(fn, delay) {
+  let timer;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), delay);
+  };
+}
+
+// Throttle implementation
+function throttle(fn, limit) {
+  let inThrottle;
+  return (...args) => {
+    if (!inThrottle) {
+      fn(...args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
+}`
+      },
+      {
+        id: "fe-29",
+        num: 29,
+        title: "Prototypes and Prototypal Inheritance",
+        diff: "advanced",
+        priority: false,
+        spoken: "JavaScript uses prototypal inheritance: every object has an internal link to another object called its prototype (__proto__). When accessing a property on an object, the JavaScript engine checks the object itself; if missing, it searches up the prototype chain until found or until reaching Object.prototype.__proto__ which is null. ES6 classes are syntactic sugar over this prototype chain.",
+        code: `function Animal(name) { this.name = name; }
+Animal.prototype.speak = function() { return \`\${this.name} makes a sound\`; };
+
+const dog = new Animal('Rex');
+console.log(dog.speak()); // 'Rex makes a sound'
+console.log(dog.__proto__ === Animal.prototype); // true`
+      },
+      {
+        id: "fe-30",
+        num: 30,
+        title: "Array Methods: map, filter, reduce, find, and forEach",
+        diff: "beginner",
+        priority: false,
+        spoken: "map transforms each element into a new array. filter creates a new array containing elements that pass a predicate check. reduce aggregates an array down to a single value (number, object, or grouped map). find returns the first matching element or undefined. forEach executes side effects on each item without returning a new array.",
+        code: `const numbers = [10, 20, 30];
+const doubled = numbers.map(n => n * 2);
+const filtered = numbers.filter(n => n > 15);
+const sum = numbers.reduce((acc, curr) => acc + curr, 0); // 60`
+      },
+      {
+        id: "fe-31",
+        num: 31,
+        title: "null, undefined, and NaN: Types and Comparison Quirks",
+        diff: "beginner",
+        priority: false,
+        spoken: "undefined means a variable has been declared but not assigned a value. null represents an intentional absence of any object value. NaN (Not a Number) represents an unrepresentable mathematical result (e.g., 0 / 0). Quirks: typeof null is 'object' due to a historical bug in JavaScript's type tagging; NaN is never equal to anything, including itself (NaN === NaN is false), so we check for it using Number.isNaN().",
+        followUps: [
+          { q: "What does the nullish coalescing operator (??) check?", a: "It evaluates the right-hand side only if the left-hand side is null or undefined (unlike ||, which evaluates for any falsy value like 0 or '')." }
+        ]
+      },
+      {
+        id: "fe-32",
+        num: 32,
+        title: "Preventing Stale API Responses and UI Race Conditions",
+        diff: "advanced",
+        priority: true,
+        spoken: "Race conditions occur when multiple asynchronous API calls are triggered in rapid succession, and an older request resolves after a newer one, overwriting the UI with stale data. We solve this by: 1) Cancelling previous in-flight requests using AbortController, or 2) Tracking request IDs with a local closure variable to ignore responses from outdated requests.",
+        code: `// Pattern: Local request sequence ID
+let latestRequestId = 0;
+
+async function searchUser(query) {
+  const currentId = ++latestRequestId;
+  const res = await fetch(\`/api/search?q=\${query}\`);
+  const data = await res.json();
+  
+  // Ignore response if a newer search request was triggered
+  if (currentId === latestRequestId) {
+    updateUI(data);
+  }
+}`
+      },
+      {
+        id: "fe-33",
+        num: 33,
+        title: "CORS and Preflight (OPTIONS) Requests",
+        diff: "intermediate",
+        priority: true,
+        spoken: "CORS is a browser security mechanism that blocks web applications from reading cross-origin HTTP responses unless the server explicitly permits it via Access-Control headers. For 'non-simple' requests (methods other than GET/POST, custom headers like Authorization, or JSON content types), the browser automatically sends a preflight OPTIONS request to verify that the server permits the origin and headers before sending the actual request.",
+        followUps: [
+          { q: "Does CORS block the request from reaching the server?", a: "Not necessarily. The server often processes the request, but the browser blocks JavaScript from reading the response if CORS headers are missing." }
+        ]
+      },
+      {
+        id: "fe-34",
+        num: 34,
+        title: "Event Bubbling, Capturing, and Event Delegation",
+        diff: "intermediate",
+        priority: false,
+        spoken: "DOM events flow in three phases: Capturing (traveling down from window to the target element), Target (the element clicked), and Bubbling (traveling back up to the window). Event Delegation leverages bubbling by attaching a single event listener to a parent container instead of hundreds of listeners to individual child items, checking event.target to identify which child was clicked.",
+        code: `// Event delegation on table list
+document.getElementById('ticket-list').addEventListener('click', (e) => {
+  if (e.target.matches('button.delete-btn')) {
+    const id = e.target.dataset.ticketId;
+    deleteTicket(id);
+  }
+});`
+      },
+      {
+        id: "fe-35",
+        num: 35,
+        title: "Preventing Cross-Site Scripting (XSS) in Frontend Applications",
+        diff: "advanced",
+        priority: true,
+        spoken: "XSS occurs when malicious scripts are injected into web pages and executed by victim browsers. React protects against XSS by default by escaping string variables rendered in JSX. However, vulnerabilities arise if you use dangerouslySetInnerHTML, eval(), or unvalidated javascript: href attributes. We prevent XSS by sanitizing HTML using DOMPurify, setting a strict Content Security Policy (CSP), and storing auth tokens in httpOnly cookies.",
+        followUps: [
+          { q: "How does dangerouslySetInnerHTML introduce risk?", a: "If untrusted user input is passed into dangerouslySetInnerHTML without sanitization, an attacker can inject <script> tags or malicious event handlers that steal session data." }
+        ]
+      },
+      {
+        id: "fe-36",
+        num: 36,
+        title: "Semantic HTML Elements and Document Structure",
+        diff: "beginner",
+        priority: false,
+        spoken: "Semantic HTML uses meaningful tags (header, nav, main, article, section, aside, footer) that convey the role and structure of content to browsers, search engines, and assistive technologies. This improves SEO, makes code easier to maintain, and provides native screen reader landmark navigation without needing extra ARIA roles.",
+        followUps: [
+          { q: "What is the difference between <article> and <section>?", a: "<article> represents a self-contained composition that makes sense on its own (e.g., a blog post); <section> groups thematic content together with a heading." }
+        ]
+      },
+      {
+        id: "fe-37",
+        num: 37,
+        title: "Flexbox versus CSS Grid: Layout Decision Matrix",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Flexbox is designed for one-dimensional layouts along a single axis (either row OR column), making it ideal for alignment, navigation bars, and dynamic component toolbars. CSS Grid is designed for two-dimensional layouts (rows AND columns simultaneously), making it the standard choice for full-page dashboards, photo galleries, and complex data grid alignments.",
+        table: {
+          headers: ["Feature", "Flexbox", "CSS Grid"],
+          rows: [
+            ["Dimensionality", "1D (Row OR Column)", "2D (Rows AND Columns simultaneously)"],
+            ["Layout Direction", "Content-out (sizes items by content)", "Grid-in (places items into fixed grid tracks)"],
+            ["Best For", "Navbars, form groups, centered cards", "Dashboard layouts, photo grids, card layouts"]
+          ]
+        }
+      },
+      {
+        id: "fe-38",
+        num: 38,
+        title: "CSS Specificity, Inheritance, and the Cascade",
+        diff: "beginner",
+        priority: false,
+        spoken: "When multiple CSS rules target the same element, the Cascade resolves conflicts using: 1) Origin & Importance (!important), 2) Specificity score, and 3) Source order (last declared rule wins). Specificity is calculated as a 4-part score: Inline styles (1000) > IDs (100) > Classes, attributes, and pseudo-classes (10) > Elements and pseudo-elements (1). Inherited properties (like font-family and color) pass down from parents unless overridden.",
+        followUps: [
+          { q: "Why should we avoid using !important in production CSS?", a: "It breaks the natural cascade, making future overrides difficult without adding more !important declarations." }
+        ]
+      },
+      {
+        id: "fe-39",
+        num: 39,
+        title: "CSS Box Model and the Importance of box-sizing: border-box",
+        diff: "beginner",
+        priority: true,
+        spoken: "The CSS box model consists of four layers: Content, Padding, Border, and Margin. Under the default 'content-box', declared width applies only to the content area; adding padding or borders expands the element's actual rendered width. Setting 'box-sizing: border-box' includes padding and borders inside the declared width, preventing layout breakage and making responsive sizing predictable.",
+        code: `/* Standard reset in modern web applications */
+*, *::before, *::after {
+  box-sizing: border-box;
+}`
+      },
+      {
+        id: "fe-40",
+        num: 40,
+        title: "Responsive Layouts Without Fixed Widths",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Responsive design uses relative units (%, rem, vw/vh) instead of fixed pixel widths. We combine CSS media queries with fluid layout systems like CSS Grid using auto-fit and minmax() to create layouts that automatically re-arrange items across screen sizes without hardcoding breakpoints.",
+        code: `.card-grid {
+  display: grid;
+  /* Auto-fits as many columns as fit, each at least 250px */
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}`
+      },
+      {
+        id: "fe-41",
+        num: 41,
+        title: "Accessible Forms, Labels, and Keyboard Navigation",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Accessible forms ensure every input has an associated <label> using the htmlFor/id attribute or by nesting the input inside the label. Inputs must indicate validation errors with aria-invalid='true' and link to error messages using aria-describedby. All interactive controls must be reachable and operable using the Tab, Space, and Enter keys with visible focus styles.",
+        code: `<div class="form-group">
+  <label htmlFor="user-email">Email Address</label>
+  <input 
+    id="user-email" 
+    type="email" 
+    aria-invalid={hasError ? "true" : "false"}
+    aria-describedby={hasError ? "email-error" : undefined}
+  />
+  {hasError && <span id="email-error" role="alert">Please enter a valid email</span>}
+</div>`
+      },
+      {
+        id: "fe-42",
+        num: 42,
+        title: "Core Web Vitals and Image/Font Loading Optimization",
+        diff: "advanced",
+        priority: true,
+        spoken: "Google's Core Web Vitals measure user experience: LCP (Largest Contentful Paint, target < 2.5s) measures loading speed; INP (Interaction to Next Paint, target < 200ms) measures responsiveness; CLS (Cumulative Layout Shift, target < 0.1) measures visual stability. We optimize these by using modern image formats (WebP/AVIF), adding explicit width/height attributes to images to prevent layout shifts, lazy loading off-screen assets, and using font-display: swap for web fonts.",
+        followUps: [
+          { q: "What metric replaced FID (First Input Delay) in Core Web Vitals?", a: "INP (Interaction to Next Paint) became the official responsiveness metric in 2024, assessing overall interaction latency throughout the page lifecycle." }
+        ]
+      },
+      {
+        id: "fe-43",
+        num: 43,
+        title: "display: none versus visibility: hidden versus opacity: 0",
+        diff: "beginner",
+        priority: false,
+        spoken: "display: none removes the element entirely from the layout flow and accessibility tree, freeing up space. visibility: hidden hides the element visually, but preserves its physical layout space in the DOM (though it is hidden from screen readers). opacity: 0 makes the element fully transparent while keeping its layout space, and the element remains clickable and focusable unless pointer-events: none is applied.",
+        table: {
+          headers: ["Property", "Takes up Space?", "Accessible to Screen Readers?", "Clickable / Interactive?"],
+          rows: [
+            ["display: none", "No (Removed from layout)", "No", "No"],
+            ["visibility: hidden", "Yes (Preserves geometry)", "No", "No"],
+            ["opacity: 0", "Yes (Preserves geometry)", "Yes", "Yes (Unless pointer-events: none)"]
+          ]
+        }
+      },
+      {
+        id: "fe-44",
+        num: 44,
+        title: "Debugging Mobile Layout Breakages and Unwanted Horizontal Scrollbars",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Horizontal scrolling on mobile is usually caused by elements with fixed widths (e.g., width: 600px), images without max-width: 100%, un-broken long strings, or padding added to elements with width: 100% under content-box. I debug this by running a script in Chrome DevTools to find any elements whose offsetWidth exceeds window.innerWidth, and fix the offending elements using max-width: 100% and overflow-wrap: break-word.",
+        code: `// DevTools snippet to find elements causing horizontal overflow:
+document.querySelectorAll('*').forEach(el => {
+  if (el.offsetWidth > document.documentElement.offsetWidth) {
+    console.log('Overflowing element:', el);
+  }
+});`
+      },
+      {
+        id: "fe-45",
+        num: 45,
+        title: "Security Risks of Rendering Untrusted HTML in React",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Rendering untrusted HTML via dangerouslySetInnerHTML exposes users to stored XSS attacks. Attackers can inject inline scripts or malicious SVG/img onerror attributes to steal authentication tokens or perform actions on the user's behalf. If rich text or markdown must be rendered, the HTML string MUST first be sanitized using a trusted library like DOMPurify to strip dangerous tags and attributes.",
+        code: `import DOMPurify from 'dompurify';
+
+export function SafeHTMLRenderer({ untrustedServerContent }) {
+  // DOMPurify strips malicious <script> tags and onerror vectors
+  const cleanHTML = DOMPurify.sanitize(untrustedServerContent);
+  return <div dangerouslySetInnerHTML={{ __html: cleanHTML }} />;
+}`
+      },
+      {
+        id: "fe-46",
+        num: 46,
+        title: "Build a Searchable, Sortable, and Paginated Table Component in React",
+        diff: "advanced",
+        priority: true,
+        spoken: "A production table component manages state for search queries, active sort columns, sort direction, and pagination. Filtering and sorting can be computed on the client using useMemo for small datasets, or delegated to server-side query parameters for large datasets.",
+        code: `import React, { useState, useMemo } from 'react';
+
+export function DataTable({ data }) {
+  const [query, setQuery] = useState('');
+  const [sortKey, setSortKey] = useState('name');
+  const [sortAsc, setSortAsc] = useState(true);
+  const [page, setPage] = useState(1);
+  const pageSize = 5;
+
+  const processedData = useMemo(() => {
+    return data
+      .filter(item => item.name.toLowerCase().includes(query.toLowerCase()))
+      .sort((a, b) => {
+        if (a[sortKey] < b[sortKey]) return sortAsc ? -1 : 1;
+        if (a[sortKey] > b[sortKey]) return sortAsc ? 1 : -1;
+        return 0;
+      });
+  }, [data, query, sortKey, sortAsc]);
+
+  const pagedItems = processedData.slice((page - 1) * pageSize, page * pageSize);
+
+  return (
+    <div>
+      <input placeholder="Search..." value={query} onChange={e => { setQuery(e.target.value); setPage(1); }} />
+      <table>
+        <thead>
+          <tr>
+            <th onClick={() => { setSortKey('name'); setSortAsc(!sortAsc); }}>Name</th>
+            <th onClick={() => { setSortKey('role'); setSortAsc(!sortAsc); }}>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          {pagedItems.map(item => <tr key={item.id}><td>{item.name}</td><td>{item.role}</td></tr>)}
+        </tbody>
+      </table>
+      <button disabled={page === 1} onClick={() => setPage(p => p - 1)}>Prev</button>
+      <button disabled={page * pageSize >= processedData.length} onClick={() => setPage(p => p + 1)}>Next</button>
+    </div>
+  );
+}`
+      },
+      {
+        id: "fe-47",
+        num: 47,
+        title: "Implement Debounced Search with Cancellation in React",
+        diff: "advanced",
+        priority: true,
+        spoken: "To prevent overwhelming backend APIs and avoid UI race conditions, search inputs should be debounced and support request cancellation. We use an effect timer to delay the network call, and pass an AbortController signal to cancel any in-flight request if the user types again before the previous call finishes.",
+        code: `import React, { useState, useEffect } from 'react';
+
+export function LiveSearch() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [results, setResults] = useState([]);
+
+  useEffect(() => {
+    if (!searchTerm.trim()) {
+      setResults([]);
+      return;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(\`/api/search?q=\${encodeURIComponent(searchTerm)}\`, {
+          signal: controller.signal
+        });
+        const data = await res.json();
+        setResults(data);
+      } catch (err) {
+        if (err.name !== 'AbortError') console.error(err);
+      }
+    }, 300);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort(); // Cancel pending network request
+    };
+  }, [searchTerm]);
+
+  return <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />;
+}`
+      },
+      {
+        id: "fe-48",
+        num: 48,
+        title: "Build a Reusable, Accessible Form with Validation",
+        diff: "intermediate",
+        priority: false,
+        spoken: "A reusable form component provides clear label associations, field-level validation, accessible error announcements via ARIA live regions, and disabled submit states during submissions.",
+        code: `export function LoginForm({ onSubmit }) {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!email.includes('@')) {
+      setError('Please provide a valid corporate email address.');
+      return;
+    }
+    setError('');
+    onSubmit({ email });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} noValidate>
+      <label htmlFor="login-email">Email</label>
+      <input 
+        id="login-email" 
+        type="email" 
+        value={email} 
+        onChange={e => setEmail(e.target.value)} 
+        aria-invalid={!!error}
+        aria-describedby={error ? "email-err" : undefined}
+      />
+      {error && <span id="email-err" role="alert" style={{color: 'red'}}>{error}</span>}
+      <button type="submit">Sign In</button>
+    </form>
+  );
+}`
+      },
+      {
+        id: "fe-49",
+        num: 49,
+        title: "Create a Reusable Data-Fetching Hook with Retry States",
+        diff: "advanced",
+        priority: true,
+        spoken: "An enterprise data-fetching hook should handle: loading state, resolved data, error states, and a manual refetch function for retries.",
+        code: `export function useApi(fetchFn) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const execute = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await fetchFn();
+      setData(result);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [fetchFn]);
+
+  useEffect(() => { execute(); }, [execute]);
+
+  return { data, loading, error, refetch: execute };
+}`
+      },
+      {
+        id: "fe-50",
+        num: 50,
+        title: "Implement Authentication and Role-Based Protected Routes in React Router v6",
+        diff: "advanced",
+        priority: true,
+        spoken: "We protect routes using a wrapper component that reads user roles from an Auth Context. If unauthenticated, it redirects to the login route with the current location saved in state. If the user lacks the required role, it displays an unauthorized view or redirects to a safe fallback.",
+        code: `import { Navigate, Outlet, useLocation } from 'react-router-dom';
+
+export function RoleProtectedRoute({ user, allowedRoles }) {
+  const location = useLocation();
+
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (!allowedRoles.includes(user.role)) {
+    return <div className="forbidden">403 Forbidden: Insufficient Permissions</div>;
+  }
+
+  return <Outlet />;
+}`
+      },
+      {
+        id: "fe-51",
+        num: 51,
+        title: "Optimize a Frequently Re-rendering Component with Thousands of Records",
+        diff: "advanced",
+        priority: true,
+        spoken: "When a component re-renders frequently with thousands of records, we apply three optimizations: 1) Virtualize the DOM using react-window to render only the visible viewport nodes, 2) Wrap list items in React.memo and pass stable callbacks using useCallback to prevent unnecessary child re-renders, and 3) Push frequently changing state down into isolated leaf components so changes don't re-render the entire table.",
+        followUps: [
+          { q: "How do you confirm these optimizations work?", a: "Use the React DevTools Profiler to record render passes, verifying that render durations drop to sub-16ms and unaffected rows show 'Did not render'." }
+        ]
+      }
+    ];
+
+    const State = {
+      theme: localStorage.getItem("fstk_theme") || "light",
+      completed: JSON.parse(localStorage.getItem("fstk_fe_completed") || "[]"),
+      bookmarked: JSON.parse(localStorage.getItem("fstk_fe_bookmarked") || "[]"),
+      revisionOnly: false,
+      filterDiff: "all",
+      filterStatus: "all",
+      searchQuery: ""
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(State.theme);
+      renderNavigation();
+      renderQuestions();
+      updateProgress();
+      bindEvents();
+    });
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fstk_theme", theme);
+      State.theme = theme;
+    }
+
+    function bindEvents() {
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        applyTheme(State.theme === "light" ? "dark" : "light");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+          e.preventDefault();
+          document.getElementById("global-search-input").focus();
+        }
+      });
+
+      document.getElementById("global-search-input").addEventListener("input", (e) => {
+        State.searchQuery = e.target.value.toLowerCase().trim();
+        renderQuestions();
+      });
+
+      document.getElementById("filter-difficulty").addEventListener("change", (e) => {
+        State.filterDiff = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("filter-status").addEventListener("change", (e) => {
+        State.filterStatus = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("revision-mode-toggle").addEventListener("click", (e) => {
+        State.revisionOnly = !State.revisionOnly;
+        e.currentTarget.classList.toggle("btn-primary", State.revisionOnly);
+        renderQuestions();
+      });
+
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("mobile-menu-toggle").addEventListener("click", () => sidebar.classList.toggle("open"));
+      document.getElementById("sidebar-close-btn").addEventListener("click", () => sidebar.classList.remove("open"));
+    }
+
+    function renderNavigation() {
+      const container = document.getElementById("sidebar-nav-container");
+      container.innerHTML = '<div class="nav-section-title">All 51 Frontend Questions</div>';
+
+      FRONTEND_QUESTIONS.forEach(q => {
+        const item = document.createElement("a");
+        item.className = "nav-item";
+        item.href = `#${q.id}`;
+        item.innerHTML = `
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">${q.num}. ${q.title}</span>
+          <span id="badge-${q.id}" class="nav-badge">${State.completed.includes(q.id) ? '✓' : ''}</span>
+        `;
+        item.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById("sidebar").classList.remove("open");
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuestions() {
+      const target = document.getElementById("questions-render-target");
+      const rail = document.getElementById("rail-topic-outline");
+      target.innerHTML = "";
+      rail.innerHTML = "";
+
+      let filtered = FRONTEND_QUESTIONS.filter(q => {
+        if (State.revisionOnly && !q.priority) return false;
+        if (State.filterDiff !== "all" && q.diff !== State.filterDiff) return false;
+
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        if (State.filterStatus === "completed" && !isDone) return false;
+        if (State.filterStatus === "incomplete" && isDone) return false;
+        if (State.filterStatus === "bookmarked" && !isMarked) return false;
+
+        if (State.searchQuery) {
+          const matchTitle = q.title.toLowerCase().includes(State.searchQuery);
+          const matchSpoken = q.spoken.toLowerCase().includes(State.searchQuery);
+          const matchCode = q.code && q.code.toLowerCase().includes(State.searchQuery);
+          if (!matchTitle && !matchSpoken && !matchCode) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById("results-count-text").innerText = `Showing ${filtered.length} of ${FRONTEND_QUESTIONS.length} questions`;
+
+      if (filtered.length === 0) {
+        target.innerHTML = `
+          <div class="view-card" style="text-align:center; padding:3rem;">
+            <p style="color:var(--text-muted);">No questions match your current search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(q => {
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        const railLink = document.createElement("a");
+        railLink.href = `#${q.id}`;
+        railLink.style.cssText = "color:var(--text-muted); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;";
+        railLink.innerText = `${q.num}. ${q.title}`;
+        rail.appendChild(railLink);
+
+        const card = document.createElement("article");
+        card.className = "view-card";
+        card.id = q.id;
+
+        card.innerHTML = `
+          <div class="q-meta">
+            <span class="tag tag-diff-${q.diff}">${q.diff}</span>
+            <span class="tag tag-topic">Question ${q.num} of 51</span>
+            ${q.priority ? '<span class="tag" style="background:#EEF2FF; color:#4568E8;">★ High Priority</span>' : ''}
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">Target: 60-90s spoken</span>
+          </div>
+
+          <h2 class="q-title">${q.num}. ${q.title}</h2>
+
+          <div class="q-section-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Interview-Ready Spoken Answer
+          </div>
+          <div class="callout-box">
+            <p><strong>"${escapeHTML(q.spoken)}"</strong></p>
+          </div>
+
+          ${q.explanation ? `
+            <div class="q-section-heading">Architectural Context & Internals</div>
+            <p style="font-size:0.93rem; color:var(--text-main); margin-bottom:1rem;">${escapeHTML(q.explanation)}</p>
+          ` : ''}
+
+          ${q.table ? `
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>${q.table.headers.map(h => `<th>${escapeHTML(h)}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${q.table.rows.map(r => `<tr>${r.map(c => `<td>${escapeHTML(c)}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          ${q.code ? `
+            <div class="code-container">
+              <div class="code-header">
+                <span>Production Implementation</span>
+                <button class="btn btn-ghost" style="color:#FFF; padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="copyCode(this)">Copy Snippet</button>
+              </div>
+              <pre><code>${escapeHTML(q.code)}</code></pre>
+            </div>
+          ` : ''}
+
+          ${q.followUps && q.followUps.length > 0 ? `
+            <div class="q-section-heading">Likely Interviewer Follow-Ups</div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+              ${q.followUps.map(f => `
+                <div style="background:var(--bg-primary); padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.875rem;">
+                  <strong style="color:var(--text-main); display:block; margin-bottom:0.25rem;">Q: ${escapeHTML(f.q)}</strong>
+                  <span style="color:var(--text-muted);">A: ${escapeHTML(f.a)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="btn-action-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn ${isDone ? 'btn-primary' : ''}" onclick="toggleCompleted('${q.id}')">
+                ${isDone ? '✓ Completed' : 'Mark as Completed'}
+              </button>
+              <button class="btn" onclick="toggleBookmarked('${q.id}')">
+                ${isMarked ? '★ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ID: <code>${q.id}</code>
+            </div>
+          </div>
+        `;
+
+        target.appendChild(card);
+      });
+    }
+
+    function toggleCompleted(id) {
+      if (State.completed.includes(id)) {
+        State.completed = State.completed.filter(x => x !== id);
+      } else {
+        State.completed.push(id);
+      }
+      localStorage.setItem("fstk_fe_completed", JSON.stringify(State.completed));
+      updateProgress();
+      renderQuestions();
+      renderNavigation();
+    }
+
+    function toggleBookmarked(id) {
+      if (State.bookmarked.includes(id)) {
+        State.bookmarked = State.bookmarked.filter(x => x !== id);
+      } else {
+        State.bookmarked.push(id);
+      }
+      localStorage.setItem("fstk_fe_bookmarked", JSON.stringify(State.bookmarked));
+      renderQuestions();
+    }
+
+    function copyCode(btn) {
+      const code = btn.closest(".code-container").querySelector("code").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy Snippet", 2000);
+      });
+    }
+
+    function updateProgress() {
+      const total = FRONTEND_QUESTIONS.length;
+      const done = State.completed.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("section-progress-bar").style.width = `${pct}%`;
+      document.getElementById("section-progress-label").innerText = `${done}/${total} (${pct}%)`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section G: Docker & Containerization — Complete 5 YOE Full-Stack Guide</title>
+  <style>
+    :root {
+      --bg-primary: #F6F8FC;
+      --surface: #FFFFFF;
+      --sidebar-bg: #17243A;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #172033;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --warning-bg: #FFF7E6;
+      --warning-text: #B45309;
+      --success-bg: #EAF8F0;
+      --success-text: #0F766E;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #64748B;
+      --sidebar-active: #F8FAFC;
+      --primary: #6384F9;
+      --primary-hover: #4568E8;
+      --secondary: #14B8A6;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #1E293B;
+      --code-bg: #050811;
+      --code-text: #F8FAFC;
+      --warning-bg: #2C1E04;
+      --warning-text: #FBBF24;
+      --success-bg: #062D24;
+      --success-text: #34D399;
+      --danger-bg: #361010;
+      --danger-text: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; }
+
+    #sidebar { width: 330px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.25s ease; border-right: 1px solid var(--border); }
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    #content-area { flex: 1; display: flex; overflow-y: auto; scroll-behavior: smooth; }
+    #content-stage { flex: 1; padding: 2rem 3rem; max-width: 1080px; margin: 0 auto; width: 100%; }
+    #context-rail { width: 280px; padding: 1.75rem 1.25rem; border-left: 1px solid var(--border); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+
+    header.top-bar { background: var(--surface); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; flex-shrink: 0; z-index: 30; }
+    .search-wrapper { position: relative; width: 440px; }
+    .search-input { width: 100%; padding: 0.5rem 2.2rem 0.5rem 2.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-main); font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(69, 104, 232, 0.2); }
+    .search-kbd { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; padding: 0.15rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono); }
+    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-muted); fill: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); transition: all 0.15s; }
+    .btn:hover { background: var(--bg-primary); }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-ghost { background: transparent; border-color: transparent; }
+
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .view-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); scroll-margin-top: 1.5rem; }
+    .q-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-diff-beginner { background: var(--success-bg); color: var(--success-text); }
+    .tag-diff-intermediate { background: var(--warning-bg); color: var(--warning-text); }
+    .tag-diff-advanced { background: var(--danger-bg); color: var(--danger-text); }
+    .tag-topic { background: var(--bg-primary); color: var(--text-muted); border: 1px solid var(--border); }
+    
+    .q-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.35; }
+    .q-section-heading { font-size: 0.88rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .callout-box { background: var(--bg-primary); border-left: 4px solid var(--primary); padding: 1.1rem 1.3rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 0.75rem 0 1.25rem; font-size: 0.95rem; }
+    .callout-box p { margin-bottom: 0.5rem; }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .code-container { background: var(--code-bg); border-radius: var(--radius); margin: 1.1rem 0; overflow: hidden; border: 1px solid #1E293B; }
+    .code-header { background: #1E293B; padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: #94A3B8; }
+    pre { padding: 1rem 1.2rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.86rem; color: var(--code-text); line-height: 1.55; }
+
+    .table-container { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left; }
+    th { background: var(--bg-primary); padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .mobile-menu-btn { display: none; }
+    @media (max-width: 1024px) {
+      #context-rail { display: none; }
+      #content-stage { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-menu-btn { display: inline-flex; }
+      .search-wrapper { width: 180px; }
+      #content-stage { padding: 1rem; }
+    }
+
+    @media print {
+      body { height: auto; overflow: visible; background: #FFF; color: #000; }
+      #sidebar, header.top-bar, #context-rail, .interactive-toolbar, .btn-action-group { display: none !important; }
+      #main-container, #content-area, #content-stage { overflow: visible !important; width: 100% !important; padding: 0 !important; }
+      .view-card { border: none !important; box-shadow: none !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Prep</span>
+      </div>
+      <button class="btn btn-ghost" id="sidebar-close-btn" style="color:#FFF; display:none;">✕</button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>Docker Mastery Progress</span>
+        <span id="section-progress-label">0/8 (0%)</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="section-progress-bar" style="width:0%; height:100%; background:var(--primary); transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Jump to Question</div>
+      <!-- Injected via JS -->
+    </nav>
+  </aside>
+
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="global-search-input" class="search-input" placeholder="Search Dockerfile, multi-stage, volumes, exit code 137..." autocomplete="off">
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="revision-mode-toggle" title="Show High Priority Questions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Revision Filter</span>
+        </button>
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn" onclick="window.print()" title="Print Section">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="content-area">
+      <div id="content-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">Section G: Docker & Containerization</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Exhaustive, interview-ready guide covering all 8 core Docker questions (184–191) for 5-YOE Full Stack Developers (~1 year Docker/DevOps focus). Covers storage layers, multi-stage build optimization, signal forwarding, container exit debugging, Trivy vulnerability scanning, and non-root runtime security.</p>
+        </div>
+
+        <div class="interactive-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <select id="filter-difficulty" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Difficulties</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select id="filter-status" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Questions</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+              <option value="bookmarked">Bookmarked</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);" id="results-count-text">Showing 8 of 8 questions</div>
+        </div>
+
+        <div id="questions-render-target"></div>
+      </div>
+
+      <aside id="context-rail">
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.75rem;">
+          Table of Contents
+        </div>
+        <div id="rail-topic-outline" style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.83rem;"></div>
+
+        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;">
+            5-YOE Production Container Insight
+          </div>
+          <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">
+            In production container interviews, articulate the <strong>PID 1 init problem</strong>, why <strong>exec-form syntax</strong> is mandatory for graceful SIGTERM shutdowns, and why running as <strong>non-root</strong> combined with <strong>minimal base images (slim/distroless)</strong> is non-negotiable for cloud container compliance.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const DOCKER_QUESTIONS = [
+      {
+        id: "dk-184",
+        num: 184,
+        title: "What is the difference between a Docker image and a container?",
+        diff: "beginner",
+        priority: true,
+        spoken: "A Docker image is a read-only, immutable template built from layered filesystems containing the application code, runtime libraries, and system dependencies. A container is a runnable, isolated instance of an image instantiated as a Linux process. Under the hood, starting a container mounts the read-only image layers and adds a thin read-write storage layer on top (via overlay2), using Linux kernel namespaces for process and network isolation and cgroups for resource constraints.",
+        explanation: "Images are serialized build artifacts stored in registries (like Amazon ECR or Docker Hub). When a container is started, the Docker daemon creates isolated kernel namespaces: PID (processes), NET (networking interfaces), MNT (filesystem mount points), and IPC (inter-process communication). Any files created or modified during container runtime are written exclusively to the ephemeral container writable layer, which is discarded when the container is deleted.",
+        table: {
+          headers: ["Attribute", "Docker Image", "Docker Container"],
+          rows: [
+            ["State", "Static, immutable, read-only", "Active, stateful, running OS process"],
+            ["Storage Layer", "Stacked read-only UnionFS layers (immutable)", "Read-only image layers + thin ephemeral read-write layer"],
+            ["Lifecycle", "Built via `docker build`, pushed/pulled to registry", "Created via `docker run`, started, stopped, killed"],
+            ["Analogy", "Executable program on disk / OOP Class", "Executing process in RAM / Instantiated Object"]
+          ]
+        },
+        followUps: [
+          { q: "What happens to data written inside a container when it stops vs when it is removed?", a: "When stopped, data in the writable container layer persists; when removed (`docker rm`), the writable layer is completely deleted unless persisted to a Docker volume." }
+        ]
+      },
+      {
+        id: "dk-185",
+        num: 185,
+        title: "Explain Dockerfile instructions: FROM, RUN, COPY, CMD, and ENTRYPOINT",
+        diff: "intermediate",
+        priority: true,
+        spoken: "FROM defines the base parent image to build upon. RUN executes commands during the build phase to install packages and create new cache layers. COPY transfers files from the host build context into the image filesystem. ENTRYPOINT configures the executable command that will always run when the container starts. CMD provides default arguments or default commands; when used with ENTRYPOINT, CMD acts as default parameters that can be overridden at runtime via CLI arguments.",
+        explanation: "A critical distinction exists between shell form (`CMD python main.py`) and exec form (`CMD [\"python\", \"main.py\"]`). Shell form invokes `/bin/sh -c`, making the shell PID 1 and preventing UNIX signals like SIGTERM from reaching your application. Always use JSON exec form for ENTRYPOINT and CMD so your runtime process becomes PID 1 and shuts down gracefully.",
+        code: `# Production Dockerfile demonstrating core instructions
+FROM python:3.11-slim AS base
+
+# RUN: Executes at build time; combines commands to minimize layer count
+RUN apt-get update && apt-get install -y --no-install-recommends curl \\
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# COPY: Layer caching optimization (copy dependencies before source)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+# ENTRYPOINT: Fixed executable in JSON exec form
+ENTRYPOINT ["uvicorn", "main:app"]
+
+# CMD: Default arguments passed to ENTRYPOINT (easily overridden)
+CMD ["--host", "0.0.0.0", "--port", "8000"]`,
+        followUps: [
+          { q: "What is the difference between COPY and ADD?", a: "COPY simply transfers local files into the container. ADD has extra features like auto-extracting local tar archives and downloading remote URLs; best practice is to always use COPY for predictability." },
+          { q: "How do you override ENTRYPOINT at runtime?", a: "Using the CLI flag: `docker run --entrypoint /bin/sh my-image`." }
+        ]
+      },
+      {
+        id: "dk-186",
+        num: 186,
+        title: "What are Docker volumes and bind mounts?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Docker volumes are managed directly by Docker within a dedicated host filesystem area (/var/lib/docker/volumes/ on Linux), isolated from the host OS structure; they are the standard choice for persisting production database files and sharing data between containers. Bind mounts map an arbitrary, explicit directory from the host machine into the container; they depend on the host's exact directory structure and permissions, making them ideal for local development hot-reloading where code changes on the host must immediately reflect inside the container.",
+        table: {
+          headers: ["Feature", "Named Docker Volumes", "Bind Mounts"],
+          rows: [
+            ["Host Location", "Managed by Docker (`/var/lib/docker/volumes/`)", "Any user-specified host path (e.g. `./src`)"],
+            ["Portability", "High (Can be backed up, migrated, managed by CLI)", "Low (Relies on specific host OS directory paths)"],
+            ["Performance", "Native Linux filesystem performance", "Native on Linux; performance overhead on macOS/Windows VM"],
+            ["Primary Use Case", "Databases (MongoDB/PostgreSQL), state persistence", "Local development hot-reloading (mounting code)"]
+          ]
+        },
+        code: `# 1. Production Docker Volume for MongoDB persistence:
+docker run -d -v mongo_data:/data/db -p 27017:27017 mongo:6.0
+
+# 2. Local Development Bind Mount for FastAPI hot-reload:
+docker run -d -v $(pwd)/app:/app -p 8000:8000 fastapi-dev-image`,
+        followUps: [
+          { q: "What is a tmpfs mount?", a: "A tmpfs mount stores files purely in host system memory (RAM); data is never written to disk or the container writable layer, ideal for transient sensitive secrets or high-speed cache files." }
+        ]
+      },
+      {
+        id: "dk-187",
+        num: 187,
+        title: "How do you reduce Docker image size using multi-stage builds?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Multi-stage builds use multiple FROM directives within a single Dockerfile. In the first builder stage, we include heavy compilers, build dependencies, wheel compilation tools, and development headers. In the second final stage, we initialize a clean, minimal runtime base image (such as python:3.11-slim or alpine) and copy only the compiled binaries, wheels, or static build artifacts from the builder stage. This leaves build tools, compiler caches, and intermediate files behind, shrinking production images by up to 80% and drastically reducing security attack surfaces.",
+        code: `# Stage 1: Compiler & Dependency Wheel Builder
+FROM python:3.11-slim AS builder
+WORKDIR /build
+
+RUN apt-get update && apt-get install -y --no-install-recommends gcc build-essential
+COPY requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /build/wheels -r requirements.txt
+
+# Stage 2: Minimal Final Runtime Stage
+FROM python:3.11-slim AS runner
+WORKDIR /app
+
+# Create non-root system group and user
+RUN groupadd -r appgroup && useradd -r -g appgroup -s /sbin/nologin appuser
+
+# Copy only compiled pre-built wheels from builder stage
+COPY --from=builder /build/wheels /wheels
+RUN pip install --no-cache-dir /wheels/* && rm -rf /wheels
+
+COPY --chown=appuser:appgroup . .
+
+USER appuser
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]`,
+        followUps: [
+          { q: "What is a 'distroless' image?", a: "Distroless images (provided by Google) contain only your application binary and its immediate runtime dependencies, omitting package managers, shells (bash/sh), and standard Unix utilities for maximum security." }
+        ]
+      },
+      {
+        id: "dk-188",
+        num: 188,
+        title: "How do you pass environment-specific configuration to a container?",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Containers must remain immutable across environments; we never build distinct Docker images for staging vs production. In accordance with Twelve-Factor App principles, environment configuration is injected at runtime using: 1) The CLI flag -e or --env-file for local Docker, 2) Environment variable blocks or ConfigMaps in container orchestrators, or 3) Task definitions in AWS ECS Fargate that read secret values directly from AWS Secrets Manager or SSM Parameter Store and inject them into container memory on startup.",
+        code: `# 1. Local execution using env file:
+docker run -d --env-file .env.production -p 8000:8000 my-app:v1.2.0
+
+# 2. In docker-compose.yml:
+services:
+  api:
+    image: my-app:v1.2.0
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=INFO
+    env_file:
+      - .env.secrets`,
+        followUps: [
+          { q: "Why should you never bake secrets into an image via ARG or ENV in Dockerfile?", a: "Values defined in ARG or ENV remain permanently visible in the image metadata via 'docker inspect' and 'docker history', leaking sensitive credentials." }
+        ]
+      },
+      {
+        id: "dk-189",
+        num: 189,
+        title: "Why should applications running in containers write logs to stdout and stderr?",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Containerized applications should treat logs as event streams rather than managing log files on disk. Writing logs directly to stdout and stderr allows the Docker container runtime logging driver (such as json-file, syslog, fluentd, or awslogs) to capture the output without application-level log rotation overhead. This prevents containers from filling up local ephemeral disk space, and enables container orchestrators like AWS ECS, Kubernetes, and Datadog agents to automatically route, aggregate, and index logs into CloudWatch or Elasticsearch.",
+        followUps: [
+          { q: "What happens if a containerized application writes unrotated logs to an internal file path?", a: "The container's writable storage layer will continuously expand until it fills the host disk partition, causing container crashes and host node failure." }
+        ]
+      },
+      {
+        id: "dk-190",
+        num: 190,
+        title: "A container exits immediately after starting. How would you troubleshoot it?",
+        diff: "advanced",
+        priority: true,
+        spoken: "A container exits immediately when its PID 1 root process completes, crashes, or fails startup validation. I troubleshoot this systematically: 1) Run `docker ps -a` to inspect the container's status and Exit Code. Exit code 1 indicates an application error or unhandled exception; 137 indicates an Out-Of-Memory (OOM) kill; 127 indicates a missing executable or command; 0 means the command completed successfully (e.g. running a non-daemon process). 2) Run `docker logs <container_id>` to inspect stdout/stderr tracebacks. 3) Run `docker inspect <container_id>` to examine environment variables, resource limits, and OOMKilled booleans. 4) If needed, run the container interactively with an overridden entrypoint (`docker run -it --entrypoint /bin/sh image`) to inspect files, permissions, and dependencies.",
+        table: {
+          headers: ["Exit Code", "Meaning", "Root Cause & Remediation"],
+          rows: [
+            ["Exit Code 0", "Clean Exit / Finished", "Command ran to completion (e.g., shell script finished without a persistent foreground daemon)"],
+            ["Exit Code 1", "Application Exception", "Syntax error, missing env var, DB connection failure, or unhandled crash; check `docker logs`"],
+            ["Exit Code 127", "Command Not Found", "Executable or script path in ENTRYPOINT/CMD does not exist or lacks execute permissions"],
+            ["Exit Code 137", "Fatal Signal 9 (SIGKILL)", "Linux kernel Out-Of-Memory (OOM) Killer terminated the container for exceeding RAM limits"]
+          ]
+        }
+      },
+      {
+        id: "dk-191",
+        num: 191,
+        title: "How do you scan images for vulnerabilities and avoid running containers as root?",
+        diff: "advanced",
+        priority: true,
+        spoken: "By default, container processes run as the root user (UID 0), creating severe container breakout risks where an attacker exploiting an application vulnerability gains root privileges on the underlying host kernel. We avoid this by explicitly creating a dedicated non-root user and group in the Dockerfile using `groupadd` and `useradd`, changing file ownership via `COPY --chown`, and switching execution via the `USER` directive. For vulnerability scanning, we integrate automated scanners like Trivy, Snyk, or AWS ECR Enhanced Scanning (Clair/Inspector) into our CI/CD pipelines to block builds containing Critical or High CVEs.",
+        code: `# Best-practice secure non-root Dockerfile pattern
+FROM python:3.11-slim
+
+# 1. Create non-root system user with explicit UID/GID
+RUN groupadd -g 10001 appgroup && \\
+    useradd -u 10001 -g appgroup -s /sbin/nologin -M appuser
+
+WORKDIR /app
+
+# 2. Copy dependencies and application code with explicit ownership
+COPY --chown=appuser:appgroup requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY --chown=appuser:appgroup . .
+
+# 3. Switch to non-root user (all commands below run unprivileged)
+USER 10001:10001
+
+EXPOSE 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# 4. CI/CD scanning command:
+# trivy image --severity HIGH,CRITICAL --exit-code 1 my-app:v1.0.0`,
+        followUps: [
+          { q: "Why specify UID as a number (USER 10001) instead of a name (USER appuser)?", a: "Kubernetes security contexts and restricted pod security standards validate numeric non-zero UIDs without requiring access to the container's `/etc/passwd` file." }
+        ]
+      }
+    ];
+
+    const State = {
+      theme: localStorage.getItem("fstk_theme") || "light",
+      completed: JSON.parse(localStorage.getItem("fstk_dk_completed") || "[]"),
+      bookmarked: JSON.parse(localStorage.getItem("fstk_dk_bookmarked") || "[]"),
+      revisionOnly: false,
+      filterDiff: "all",
+      filterStatus: "all",
+      searchQuery: ""
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(State.theme);
+      renderNavigation();
+      renderQuestions();
+      updateProgress();
+      bindEvents();
+    });
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fstk_theme", theme);
+      State.theme = theme;
+    }
+
+    function bindEvents() {
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        applyTheme(State.theme === "light" ? "dark" : "light");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+          e.preventDefault();
+          document.getElementById("global-search-input").focus();
+        }
+      });
+
+      document.getElementById("global-search-input").addEventListener("input", (e) => {
+        State.searchQuery = e.target.value.toLowerCase().trim();
+        renderQuestions();
+      });
+
+      document.getElementById("filter-difficulty").addEventListener("change", (e) => {
+        State.filterDiff = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("filter-status").addEventListener("change", (e) => {
+        State.filterStatus = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("revision-mode-toggle").addEventListener("click", (e) => {
+        State.revisionOnly = !State.revisionOnly;
+        e.currentTarget.classList.toggle("btn-primary", State.revisionOnly);
+        renderQuestions();
+      });
+
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("mobile-menu-toggle").addEventListener("click", () => sidebar.classList.toggle("open"));
+      document.getElementById("sidebar-close-btn").addEventListener("click", () => sidebar.classList.remove("open"));
+    }
+
+    function renderNavigation() {
+      const container = document.getElementById("sidebar-nav-container");
+      container.innerHTML = '<div class="nav-section-title">All 8 Docker Questions</div>';
+
+      DOCKER_QUESTIONS.forEach(q => {
+        const item = document.createElement("a");
+        item.className = "nav-item";
+        item.href = `#${q.id}`;
+        item.innerHTML = `
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">${q.num}. ${q.title}</span>
+          <span id="badge-${q.id}" class="nav-badge">${State.completed.includes(q.id) ? '✓' : ''}</span>
+        `;
+        item.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById("sidebar").classList.remove("open");
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuestions() {
+      const target = document.getElementById("questions-render-target");
+      const rail = document.getElementById("rail-topic-outline");
+      target.innerHTML = "";
+      rail.innerHTML = "";
+
+      let filtered = DOCKER_QUESTIONS.filter(q => {
+        if (State.revisionOnly && !q.priority) return false;
+        if (State.filterDiff !== "all" && q.diff !== State.filterDiff) return false;
+
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        if (State.filterStatus === "completed" && !isDone) return false;
+        if (State.filterStatus === "incomplete" && isDone) return false;
+        if (State.filterStatus === "bookmarked" && !isMarked) return false;
+
+        if (State.searchQuery) {
+          const matchTitle = q.title.toLowerCase().includes(State.searchQuery);
+          const matchSpoken = q.spoken.toLowerCase().includes(State.searchQuery);
+          const matchCode = q.code && q.code.toLowerCase().includes(State.searchQuery);
+          if (!matchTitle && !matchSpoken && !matchCode) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById("results-count-text").innerText = `Showing ${filtered.length} of ${DOCKER_QUESTIONS.length} questions`;
+
+      if (filtered.length === 0) {
+        target.innerHTML = `
+          <div class="view-card" style="text-align:center; padding:3rem;">
+            <p style="color:var(--text-muted);">No questions match your current search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(q => {
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        const railLink = document.createElement("a");
+        railLink.href = `#${q.id}`;
+        railLink.style.cssText = "color:var(--text-muted); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;";
+        railLink.innerText = `${q.num}. ${q.title}`;
+        rail.appendChild(railLink);
+
+        const card = document.createElement("article");
+        card.className = "view-card";
+        card.id = q.id;
+
+        card.innerHTML = `
+          <div class="q-meta">
+            <span class="tag tag-diff-${q.diff}">${q.diff}</span>
+            <span class="tag tag-topic">Question ${q.num}</span>
+            ${q.priority ? '<span class="tag" style="background:#EEF2FF; color:#4568E8;">★ High Priority</span>' : ''}
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">Target: 60-90s spoken</span>
+          </div>
+
+          <h2 class="q-title">${q.num}. ${q.title}</h2>
+
+          <div class="q-section-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Interview-Ready Spoken Answer
+          </div>
+          <div class="callout-box">
+            <p><strong>"${escapeHTML(q.spoken)}"</strong></p>
+          </div>
+
+          ${q.explanation ? `
+            <div class="q-section-heading">Production Container Internals</div>
+            <p style="font-size:0.93rem; color:var(--text-main); margin-bottom:1rem;">${escapeHTML(q.explanation)}</p>
+          ` : ''}
+
+          ${q.table ? `
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>${q.table.headers.map(h => `<th>${escapeHTML(h)}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${q.table.rows.map(r => `<tr>${r.map(c => `<td>${escapeHTML(c)}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          ${q.code ? `
+            <div class="code-container">
+              <div class="code-header">
+                <span>Production Configuration / Script</span>
+                <button class="btn btn-ghost" style="color:#FFF; padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="copyCode(this)">Copy Snippet</button>
+              </div>
+              <pre><code>${escapeHTML(q.code)}</code></pre>
+            </div>
+          ` : ''}
+
+          ${q.followUps && q.followUps.length > 0 ? `
+            <div class="q-section-heading">Likely Interviewer Follow-Ups</div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+              ${q.followUps.map(f => `
+                <div style="background:var(--bg-primary); padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.875rem;">
+                  <strong style="color:var(--text-main); display:block; margin-bottom:0.25rem;">Q: ${escapeHTML(f.q)}</strong>
+                  <span style="color:var(--text-muted);">A: ${escapeHTML(f.a)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="btn-action-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn ${isDone ? 'btn-primary' : ''}" onclick="toggleCompleted('${q.id}')">
+                ${isDone ? '✓ Completed' : 'Mark as Completed'}
+              </button>
+              <button class="btn" onclick="toggleBookmarked('${q.id}')">
+                ${isMarked ? '★ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ID: <code>${q.id}</code>
+            </div>
+          </div>
+        `;
+
+        target.appendChild(card);
+      });
+    }
+
+    function toggleCompleted(id) {
+      if (State.completed.includes(id)) {
+        State.completed = State.completed.filter(x => x !== id);
+      } else {
+        State.completed.push(id);
+      }
+      localStorage.setItem("fstk_dk_completed", JSON.stringify(State.completed));
+      updateProgress();
+      renderQuestions();
+      renderNavigation();
+    }
+
+    function toggleBookmarked(id) {
+      if (State.bookmarked.includes(id)) {
+        State.bookmarked = State.bookmarked.filter(x => x !== id);
+      } else {
+        State.bookmarked.push(id);
+      }
+      localStorage.setItem("fstk_dk_bookmarked", JSON.stringify(State.bookmarked));
+      renderQuestions();
+    }
+
+    function copyCode(btn) {
+      const code = btn.closest(".code-container").querySelector("code").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy Snippet", 2000);
+      });
+    }
+
+    function updateProgress() {
+      const total = DOCKER_QUESTIONS.length;
+      const done = State.completed.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("section-progress-bar").style.width = `${pct}%`;
+      document.getElementById("section-progress-label").innerText = `${done}/${total} (${pct}%)`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

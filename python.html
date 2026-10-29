@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Section A: Python — Complete 5 YOE Full-Stack Interview Guide</title>
+  <style>
+    :root {
+      --bg-primary: #F6F8FC;
+      --surface: #FFFFFF;
+      --sidebar-bg: #17243A;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #172033;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --code-bg: #0F172A;
+      --code-text: #E2E8F0;
+      --warning-bg: #FFF7E6;
+      --warning-text: #B45309;
+      --success-bg: #EAF8F0;
+      --success-text: #0F766E;
+      --danger-bg: #FEF2F2;
+      --danger-text: #B91C1C;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #64748B;
+      --sidebar-active: #F8FAFC;
+      --primary: #6384F9;
+      --primary-hover: #4568E8;
+      --secondary: #14B8A6;
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --border: #1E293B;
+      --code-bg: #050811;
+      --code-text: #F8FAFC;
+      --warning-bg: #2C1E04;
+      --warning-text: #FBBF24;
+      --success-bg: #062D24;
+      --success-text: #34D399;
+      --danger-bg: #361010;
+      --danger-text: #F87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; }
+
+    #sidebar { width: 330px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; transition: transform 0.25s ease; border-right: 1px solid var(--border); }
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    #content-area { flex: 1; display: flex; overflow-y: auto; scroll-behavior: smooth; }
+    #content-stage { flex: 1; padding: 2rem 3rem; max-width: 1080px; margin: 0 auto; width: 100%; }
+    #context-rail { width: 280px; padding: 1.75rem 1.25rem; border-left: 1px solid var(--border); background: var(--surface); overflow-y: auto; flex-shrink: 0; }
+
+    header.top-bar { background: var(--surface); border-bottom: 1px solid var(--border); height: 64px; display: flex; align-items: center; justify-content: space-between; padding: 0 1.75rem; flex-shrink: 0; z-index: 30; }
+    .search-wrapper { position: relative; width: 440px; }
+    .search-input { width: 100%; padding: 0.5rem 2.2rem 0.5rem 2.5rem; border: 1px solid var(--border); border-radius: var(--radius); background: var(--bg-primary); color: var(--text-main); font-size: 0.875rem; outline: none; }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(69, 104, 232, 0.2); }
+    .search-kbd { position: absolute; right: 0.75rem; top: 50%; transform: translateY(-50%); font-size: 0.75rem; padding: 0.15rem 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; color: var(--text-muted); font-family: var(--font-mono); }
+    .search-icon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 16px; height: 16px; stroke: var(--text-muted); fill: none; }
+
+    .header-actions { display: flex; align-items: center; gap: 0.75rem; }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.85rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); transition: all 0.15s; }
+    .btn:hover { background: var(--bg-primary); }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-ghost { background: transparent; border-color: transparent; }
+
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 1rem 0; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.65rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-item.active { background: rgba(69, 104, 232, 0.18); color: #FFF; border-left: 3px solid var(--primary); font-weight: 600; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .view-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 2rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); scroll-margin-top: 1.5rem; }
+    .q-meta { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.85rem; flex-wrap: wrap; }
+    .tag { font-size: 0.72rem; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+    .tag-diff-beginner { background: var(--success-bg); color: var(--success-text); }
+    .tag-diff-intermediate { background: var(--warning-bg); color: var(--warning-text); }
+    .tag-diff-advanced { background: var(--danger-bg); color: var(--danger-text); }
+    .tag-topic { background: var(--bg-primary); color: var(--text-muted); border: 1px solid var(--border); }
+    
+    .q-title { font-size: 1.35rem; font-weight: 700; color: var(--text-main); margin-bottom: 1.25rem; line-height: 1.35; }
+    .q-section-heading { font-size: 0.88rem; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: 0.06em; margin: 1.4rem 0 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    
+    .callout-box { background: var(--bg-primary); border-left: 4px solid var(--primary); padding: 1.1rem 1.3rem; border-radius: 0 var(--radius) var(--radius) 0; margin: 0.75rem 0 1.25rem; font-size: 0.95rem; }
+    .callout-box p { margin-bottom: 0.5rem; }
+    .callout-box p:last-child { margin-bottom: 0; }
+
+    .code-container { background: var(--code-bg); border-radius: var(--radius); margin: 1.1rem 0; overflow: hidden; border: 1px solid #1E293B; }
+    .code-header { background: #1E293B; padding: 0.4rem 1rem; display: flex; justify-content: space-between; align-items: center; font-family: var(--font-mono); font-size: 0.75rem; color: #94A3B8; }
+    pre { padding: 1rem 1.2rem; overflow-x: auto; font-family: var(--font-mono); font-size: 0.86rem; color: var(--code-text); line-height: 1.55; }
+
+    .table-container { overflow-x: auto; margin: 1.1rem 0; border: 1px solid var(--border); border-radius: var(--radius); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left; }
+    th { background: var(--bg-primary); padding: 0.75rem 1rem; font-weight: 600; border-bottom: 1px solid var(--border); color: var(--text-main); }
+    td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+
+    .bullet-list { padding-left: 1.25rem; margin: 0.6rem 0 1rem; font-size: 0.93rem; }
+    .bullet-list li { margin-bottom: 0.35rem; }
+
+    .mobile-menu-btn { display: none; }
+    @media (max-width: 1024px) {
+      #context-rail { display: none; }
+      #content-stage { padding: 1.5rem; }
+    }
+    @media (max-width: 768px) {
+      #sidebar { position: fixed; height: 100vh; transform: translateX(-100%); }
+      #sidebar.open { transform: translateX(0); }
+      .mobile-menu-btn { display: inline-flex; }
+      .search-wrapper { width: 180px; }
+      #content-stage { padding: 1rem; }
+    }
+
+    @media print {
+      body { height: auto; overflow: visible; background: #FFF; color: #000; }
+      #sidebar, header.top-bar, #context-rail, .interactive-toolbar, .btn-action-group { display: none !important; }
+      #main-container, #content-area, #content-stage { overflow: visible !important; width: 100% !important; padding: 0 !important; }
+      .view-card { border: none !important; box-shadow: none !important; page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body data-theme="light">
+
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Prep</span>
+      </div>
+      <button class="btn btn-ghost" id="sidebar-close-btn" style="color:#FFF; display:none;">✕</button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>Section A Completion</span>
+        <span id="section-progress-label">0/38 (0%)</span>
+      </div>
+      <div style="height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div id="section-progress-bar" style="width:0%; height:100%; background:var(--primary); transition: width 0.3s;"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Jump to Question</div>
+      <!-- Injected via JS -->
+    </nav>
+  </aside>
+
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem;">
+        <button class="btn btn-ghost mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle menu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="search-wrapper">
+          <svg class="search-icon" viewBox="0 0 24 24" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="global-search-input" class="search-input" placeholder="Search Python answers, code, syntax..." autocomplete="off">
+          <span class="search-kbd">/</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn" id="revision-mode-toggle" title="Show High Priority Questions">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+          <span>Revision Filter</span>
+        </button>
+        <button class="btn" id="theme-toggle" aria-label="Toggle theme">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+        </button>
+        <button class="btn" onclick="window.print()" title="Print Section">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+        </button>
+      </div>
+    </header>
+
+    <div id="content-area">
+      <div id="content-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.35rem;">Section A: Python</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Exhaustive, interview-ready guide covering all 38 Python questions for 5-YOE Full Stack Developers. Includes spoken transcripts, internal runtime mechanics, production code, edge cases, and follow-ups.</p>
+        </div>
+
+        <div class="interactive-toolbar" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:0.75rem;">
+          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
+            <select id="filter-difficulty" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Difficulties</option>
+              <option value="beginner">Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+            <select id="filter-status" class="btn" style="padding:0.4rem 0.6rem;">
+              <option value="all">All Questions</option>
+              <option value="completed">Completed</option>
+              <option value="incomplete">Incomplete</option>
+              <option value="bookmarked">Bookmarked</option>
+            </select>
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);" id="results-count-text">Showing 38 of 38 questions</div>
+        </div>
+
+        <div id="questions-render-target"></div>
+      </div>
+
+      <aside id="context-rail">
+        <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.75rem;">
+          Table of Contents
+        </div>
+        <div id="rail-topic-outline" style="display:flex; flex-direction:column; gap:0.45rem; font-size:0.83rem;"></div>
+
+        <div style="margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted); font-weight:700; margin-bottom:0.5rem;">
+            5-YOE Senior Insight
+          </div>
+          <p style="font-size:0.825rem; color:var(--text-muted); line-height:1.5;">
+            In Python interviews, differentiate between <em>syntactic features</em> and <em>runtime cost</em>. Mention CPython internals (reference counting, cyclic GC, GIL release on I/O, hash randomization) to validate senior-level expertise.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    const PYTHON_QUESTIONS = [
+      {
+        id: "py-01",
+        num: 1,
+        title: "Differences between lists, tuples, sets, and dictionaries",
+        diff: "beginner",
+        priority: true,
+        spoken: "Lists and tuples represent ordered collections. Lists are mutable dynamic arrays designed for items of homogeneous or variable length that need in-place changes. Tuples are immutable, have fixed memory, and are hashable if their contents are hashable. Sets store unique, unordered elements backed by an open-addressing hash table for O(1) lookups. Dictionaries map unique hashable keys to arbitrary values, preserving insertion order in Python 3.7+ with O(1) average lookup, insertion, and deletion.",
+        explanation: "Lists over-allocate memory to achieve amortized O(1) append (allocating roughly 1.125x when full). Tuples are allocated in a single PyTupleObject block, eliminating resize overhead and reducing garbage collector tracking burden. Sets and dicts use hash tables with perturbation and quadratic probing for collision resolution.",
+        table: {
+          headers: ["Feature", "List", "Tuple", "Set", "Dictionary"],
+          rows: [
+            ["Mutability", "Mutable", "Immutable", "Mutable", "Mutable"],
+            ["Ordering", "Ordered (Indexable)", "Ordered (Indexable)", "Unordered", "Insertion-ordered (3.7+)"],
+            ["Duplicates", "Allowed", "Allowed", "Disallowed", "Keys Disallowed / Values Allowed"],
+            ["Lookup Time", "O(1) index, O(n) search", "O(1) index, O(n) search", "O(1) avg value lookup", "O(1) avg key lookup"],
+            ["Memory Footprint", "Higher (over-allocation)", "Minimal / Compact", "Medium (hash table sparseness)", "Medium (split-table / compact)"]
+          ]
+        },
+        code: `# Memory & Hashability demo
+lst = [1, 2, 3]
+tup = (1, 2, 3)
+st = {1, 2, 3}
+dct = {"a": 1, "b": 2}
+
+# Valid dict key: tuple with immutable contents
+valid_key = (10, "admin")
+cache = {valid_key: True}
+
+# Invalid dict key: tuple containing mutable object
+try:
+    invalid_key = (10, [1, 2])
+    cache[invalid_key] = False
+except TypeError as e:
+    print(e)  # unhashable type: 'list'`,
+        followUps: [
+          { q: "Why can't a set contain a list?", a: "Sets require all elements to implement __hash__() and remain invariant. Lists are mutable and do not implement __hash__." },
+          { q: "What is the memory size difference between an empty list and an empty tuple?", a: "An empty tuple in CPython is a cached singleton (40 bytes on 64-bit). An empty list allocates around 56 bytes plus dynamic pointer buffer overhead." }
+        ]
+      },
+      {
+        id: "py-02",
+        num: 2,
+        title: "Mutable and immutable objects and problems caused by mutable values",
+        diff: "beginner",
+        priority: true,
+        spoken: "In Python, every variable is a reference to an object in memory. Immutable objects—such as integers, floats, strings, tuples, and frozensets—cannot be changed after creation; any modification produces a new object. Mutable objects—like lists, dictionaries, and sets—can have their internal state altered in place. The most common production bug with mutable values is mutable default arguments in functions: default arguments are evaluated only once at module definition time, meaning all invocations share the same instance.",
+        explanation: "When Python executes a `def` statement, default parameter expressions are evaluated and stored in the function's `__defaults__` attribute. If that default is a mutable list or dict, any mutation inside the function persists across subsequent calls, causing data leaks between requests in web applications.",
+        code: `# THE PRODUCTION PITFALL:
+def create_session(user_id: str, tags: list = []):
+    tags.append(user_id)  # Shared state across all callers!
+    return tags
+
+print(create_session("alice"))  # ['alice']
+print(create_session("bob"))    # ['alice', 'bob'] -> Bug!
+
+# THE PRODUCTION FIX:
+def create_session_safe(user_id: str, tags: list = None):
+    if tags is None:
+        tags = []
+    tags.append(user_id)
+    return tags`,
+        followUps: [
+          { q: "Can an immutable object change its value?", a: "An immutable object itself cannot be re-pointed to new memory, but if it contains a reference to a mutable object (e.g. a tuple containing a list), the contents of that nested list can mutate." },
+          { q: "How do mutable shared objects behave in multithreading?", a: "While the GIL prevents interpreter corruption, in-place mutations of shared mutable objects without locks still lead to race conditions and inconsistent application states." }
+        ]
+      },
+      {
+        id: "py-03",
+        num: 3,
+        title: "== versus is",
+        diff: "beginner",
+        priority: true,
+        spoken: "'==' checks for value equality by invoking the object's __eq__() method, verifying if two objects have identical data. 'is' checks for identity by comparing memory addresses using id(a) == id(b), verifying if both references point to the exact same object in RAM. We should always use 'is' when checking against singletons like None, True, or False.",
+        explanation: "CPython interns small integers between -5 and 256 and small string literals in a global table for memory efficiency. Comparing integers in this range with `is` might evaluate to True, but for larger integers outside this range, it will return False. Never use `is` for value comparison.",
+        code: `a = [1, 2, 3]
+b = [1, 2, 3]
+
+print(a == b)  # True (equal data)
+print(a is b)  # False (distinct memory allocations)
+
+# Small integer interning artifact
+x = 256
+y = 256
+print(x is y)  # True (interned by CPython)
+
+p = 1000
+q = 1000
+print(p is q)  # False (distinct allocations outside small-int range)
+
+# Correct production usage:
+if a is not None:
+    pass`,
+        followUps: [
+          { q: "What does id(obj) return?", a: "In CPython, id(obj) returns the actual memory address where the C struct representing the Python object is stored." }
+        ]
+      },
+      {
+        id: "py-04",
+        num: 4,
+        title: "Shallow copy versus deep copy",
+        diff: "beginner",
+        priority: true,
+        spoken: "A shallow copy creates a new compound object, but populates it with references to the child objects contained in the original. If a nested mutable child is modified, both the copy and the original reflect the modification. A deep copy recursively traverses the entire object graph, constructing new instances of every child object, creating completely independent memory trees.",
+        explanation: "Shallow copies can be made using `copy.copy()`, slicing `lst[:]`, or factory constructors `list(lst)`. Deep copies require `copy.deepcopy()`. Deep copy maintains an internal `memo` dictionary to keep track of already-copied objects to prevent infinite recursion on cyclical graphs.",
+        code: `import copy
+
+orig = [[10, 20], [30, 40]]
+shallow = copy.copy(orig)
+deep = copy.deepcopy(orig)
+
+# Modifying child in shallow copy:
+shallow[0][0] = 999
+print(orig[0][0])     # 999 (affected!)
+print(deep[0][0])     # 10  (completely isolated)
+
+# Modifying outer container:
+shallow.append([50, 60])
+print(len(orig))      # 2 (outer container is independent)`,
+        followUps: [
+          { q: "What is the performance overhead of deepcopy in production APIs?", a: "Deepcopy traverses the entire object graph and maintains memoization dictionaries, making it significantly slower and memory-intensive for large payloads. In APIs, prefer immutability or explicit reconstruction." }
+        ]
+      },
+      {
+        id: "py-05",
+        num: 5,
+        title: "*args and **kwargs",
+        diff: "beginner",
+        priority: false,
+        spoken: "*args and **kwargs allow a function to accept a variable number of positional and keyword arguments. Inside the function, args is captured as a tuple containing all extra positional arguments, while kwargs is captured as a dictionary containing all extra keyword arguments. They are essential for writing decorators, higher-order functions, and proxy wrappers.",
+        explanation: "The asterisks are unpacking operators. The order of parameters in a function signature must be: standard positional arguments, *args, keyword-only arguments, and finally **kwargs.",
+        code: `def request_proxy(url: str, *params, timeout: int = 30, **headers):
+    print(f"URL: {url}")
+    print(f"Extra positional params (tuple): {params}")
+    print(f"Keyword-only timeout: {timeout}")
+    print(f"Extra headers (dict): {headers}")
+
+request_proxy("https://api.dev/v1", "param1", "param2", timeout=10, Auth="Bearer xyz", Trace="123")`,
+        followUps: [
+          { q: "What are keyword-only arguments?", a: "Arguments defined after * or *args in a function signature can only be passed as explicit keywords, preventing accidental positional misassignments." }
+        ]
+      },
+      {
+        id: "py-06",
+        num: 6,
+        title: "Decorators and implementing an execution-time decorator",
+        diff: "intermediate",
+        priority: true,
+        spoken: "A decorator is a callable that accepts a function as an argument, extends or alters its behavior without modifying its source code, and returns a new callable. In production, we always decorate the wrapper with @functools.wraps to preserve the original function's metadata, name, docstrings, and type annotations.",
+        explanation: "The syntax `@my_decorator` above `def func()` is syntactic sugar for `func = my_decorator(func)`. Without `@wraps`, logging frameworks, debuggers, and FastAPI routing inspection would see `wrapper` instead of the original function name.",
+        code: `import time
+from functools import wraps
+from typing import Callable, Any
+
+def track_latency(metric_name: str = "execution_time"):
+    """Decorator factory that accepts configuration arguments."""
+    def decorator(func: Callable) -> Callable:
+        @wraps(func)
+        def wrapper(*args, **kwargs) -> Any:
+            start_time = time.perf_counter()
+            try:
+                result = func(*args, **kwargs)
+                return result
+            finally:
+                duration = time.perf_counter() - start_time
+                print(f"[METRIC] {metric_name} | {func.__name__} took {duration:.4f}s")
+        return wrapper
+    return decorator
+
+@track_latency(metric_name="database_query")
+def fetch_orders(customer_id: int):
+    time.sleep(0.05)
+    return [{"id": 101, "total": 450.0}]`,
+        followUps: [
+          { q: "How do you decorate an async coroutine function?", a: "The inner wrapper must be defined as `async def wrapper(*args, **kwargs):` and use `await func(*args, **kwargs)`." }
+        ]
+      },
+      {
+        id: "py-07",
+        num: 7,
+        title: "Generators and yield",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Generators are functions that yield values on demand instead of computing and returning an entire collection at once. When the yield keyword is reached, the function's execution state, local variables, and instruction pointer are suspended, returning control to the caller. This provides O(1) memory complexity, making them essential for streaming multi-gigabyte files or infinite event loops.",
+        explanation: "A generator function returns a generator object which implements Python's iterator protocol (__iter__ and __next__). Calling next() resumes execution from the exact line where it paused until the next yield or a return/StopIteration.",
+        code: `def stream_large_log(file_path: str):
+    with open(file_path, "r", encoding="utf-8") as f:
+        for line in f:
+            if "ERROR" in line:
+                yield line.strip()
+
+# Consuming without allocating entire file into RAM:
+for error_log in stream_large_log("/var/log/nginx/access.log"):
+    # Process one log record at a time in constant memory
+    pass`,
+        followUps: [
+          { q: "What does 'yield from' do?", a: "'yield from' delegates iteration directly to a sub-generator or iterable, and establishes a bidirectional channel for send(), throw(), and return values." }
+        ]
+      },
+      {
+        id: "py-08",
+        num: 8,
+        title: "Iterators versus iterables",
+        diff: "intermediate",
+        priority: false,
+        spoken: "An iterable is any object capable of returning its members one at a time. It implements the __iter__() method, which returns an iterator (examples include lists, tuples, and dictionaries). An iterator is the actual stateful object that produces values across a stream; it implements both __iter__() (which returns self) and __next__(), which returns the next value or raises StopIteration when depleted.",
+        explanation: "When you write `for item in collection:`, Python calls `iter(collection)` to obtain the iterator, and then repeatedly calls `next()` inside an internal try-except block that terminates upon catching `StopIteration`.",
+        code: `numbers = [10, 20]     # Iterable
+it = iter(numbers)     # Iterator (created via numbers.__iter__())
+
+print(next(it))        # 10 (via it.__next__())
+print(next(it))        # 20
+try:
+    print(next(it))
+except StopIteration:
+    print("Iterator fully consumed")`,
+        followUps: [
+          { q: "Can an iterator be iterated over multiple times?", a: "No. Iterators maintain internal progression state and are exhausted after a single pass. Iterables can produce fresh iterators repeatedly." }
+        ]
+      },
+      {
+        id: "py-09",
+        num: 9,
+        title: "List comprehensions versus generator expressions",
+        diff: "intermediate",
+        priority: false,
+        spoken: "A list comprehension evaluates eagerly, allocating memory immediately to store the entire list. A generator expression evaluates lazily, creating an iterator that yields one value at a time on demand. We choose list comprehensions when we need random access, slicing, length, or multiple iterations; we choose generator expressions for large data pipelines or single-pass aggregations like sum() or max() to keep memory constant.",
+        code: `import sys
+
+# List comprehension: Eager allocation
+lst = [x * 2 for x in range(1_000_000)]
+print(f"List size: {sys.getsizeof(lst)} bytes")  # ~8.4 MB
+
+# Generator expression: Lazy evaluation
+gen = (x * 2 for x in range(1_000_000))
+print(f"Gen size: {sys.getsizeof(gen)} bytes")   # ~104 bytes
+
+# Direct aggregation without intermediate list
+total = sum(x * 2 for x in range(1_000_000))`,
+        followUps: [
+          { q: "Does a generator expression run faster than a list comprehension?", a: "For small datasets, list comprehensions are slightly faster due to optimized C-level list construction. For large datasets, generator expressions win overall because they eliminate memory allocation pressure and paging." }
+        ]
+      },
+      {
+        id: "py-10",
+        num: 10,
+        title: "Context managers and implementing one",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Context managers manage resources deterministically using the 'with' statement, ensuring that acquisition and cleanup logic (such as releasing database connections, file descriptors, or locks) executes reliably even if unhandled exceptions are raised. They are implemented either as a class with __enter__ and __exit__ methods or using the @contextlib.contextmanager generator decorator.",
+        explanation: "__enter__ sets up the resource and returns the bound target. __exit__(exc_type, exc_val, exc_tb) handles cleanup. If __exit__ returns True, it suppresses any raised exception; returning False or None allows exceptions to propagate.",
+        code: `from contextlib import contextmanager
+import time
+
+# Method 1: Class-based
+class DatabaseTransaction:
+    def __init__(self, connection):
+        self.conn = connection
+
+    def __enter__(self):
+        self.conn.begin()
+        return self.conn
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_type is not None:
+            self.conn.rollback()
+            print(f"[ERROR] Rolled back transaction: {exc_val}")
+            return False  # Propagate exception
+        self.conn.commit()
+        return True
+
+# Method 2: Decorator-based
+@contextmanager
+def execution_timer(label: str):
+    start = time.perf_counter()
+    try:
+        yield
+    finally:
+        print(f"[{label}] Elapsed: {time.perf_counter() - start:.3f}s")`,
+        followUps: [
+          { q: "How do you implement an asynchronous context manager in FastAPI/asyncio?", a: "Implement `__aenter__` and `__aexit__`, and invoke it with `async with`." }
+        ]
+      },
+      {
+        id: "py-11",
+        num: 11,
+        title: "Exception handling and custom exceptions",
+        diff: "intermediate",
+        priority: false,
+        spoken: "Robust exception handling in Python uses try-except-else-finally blocks. The 'else' block runs only if no exception was raised in 'try', and 'finally' runs unconditionally for resource teardown. In professional architectures, we define a domain hierarchy of custom exceptions inheriting from Exception (never BaseException) to decouple internal errors from HTTP response layers.",
+        code: `# Custom Exception Hierarchy
+class ApplicationError(Exception):
+    """Base domain exception."""
+    def __init__(self, message: str, error_code: str):
+        super().__init__(message)
+        self.error_code = error_code
+
+class EntityNotFoundError(ApplicationError):
+    def __init__(self, entity: str, identifier: str):
+        super().__init__(f"{entity} with ID {identifier} not found.", "ERR_NOT_FOUND")
+
+class PaymentGatewayTimeoutError(ApplicationError):
+    pass
+
+# Usage
+try:
+    raise EntityNotFoundError("Order", "ord_9981")
+except EntityNotFoundError as e:
+    print(f"Code: {e.error_code} | Message: {e}")
+except ApplicationError as e:
+    print(f"Generic App Error: {e}")
+else:
+    print("Executed smoothly")
+finally:
+    print("Always executed")`,
+        followUps: [
+          { q: "Why should we avoid bare `except:` statements?", a: "A bare `except:` catches `BaseException`, including `KeyboardInterrupt` and `SystemExit`, preventing the process from terminating properly." },
+          { q: "What is exception chaining?", a: "Using `raise NewException() from original_exc` sets the `__cause__` attribute, preserving the original traceback for debugging." }
+        ]
+      },
+      {
+        id: "py-12",
+        num: 12,
+        title: "Closures, lambda functions, and higher-order functions",
+        diff: "intermediate",
+        priority: false,
+        spoken: "A closure occurs when a nested inner function retains access to variables in its enclosing lexical scope, even after the outer function has completed execution. A lambda is an anonymous, single-expression function. A higher-order function is any function that accepts other functions as arguments or returns a function (such as map, filter, or decorators).",
+        code: `# Closure Example
+def create_multiplier(factor: int):
+    # factor is stored in the closure cell (__closure__)
+    def multiplier(number: int) -> int:
+        return number * factor
+    return multiplier
+
+double = create_multiplier(2)
+triple = create_multiplier(3)
+print(double(10))  # 20
+print(triple(10))  # 30
+
+# Lambda & Higher-order function
+data = [{"user": "Alice", "score": 92}, {"user": "Bob", "score": 85}]
+sorted_users = sorted(data, key=lambda x: x["score"], reverse=True)`,
+        followUps: [
+          { q: "What is the late-binding gotcha in Python closures?", a: "Variables in closures are looked up when the inner function is called, not when defined. Inside a loop, lambdas will all capture the final loop value unless bound with default args like `lambda x, i=i: x + i`." }
+        ]
+      },
+      {
+        id: "py-13",
+        num: 13,
+        title: "Instance methods, class methods, and static methods",
+        diff: "beginner",
+        priority: true,
+        spoken: "Instance methods take 'self' as their first parameter and can read and modify instance state as well as class state. Class methods take 'cls' using the @classmethod decorator; they operate on the class itself and are commonly used for alternative constructors. Static methods use @staticmethod; they do not take self or cls, behaving like regular functions scoped inside the class namespace for logical grouping.",
+        code: `class User:
+    species = "Homo Sapiens"
+
+    def __init__(self, username: str, email: str):
+        self.username = username
+        self.email = email
+
+    # Instance method: accesses instance attributes
+    def get_display_name(self) -> str:
+        return f"{self.username} ({self.species})"
+
+    # Class method: Alternative constructor
+    @classmethod
+    def from_csv_line(cls, csv_line: str):
+        username, email = csv_line.strip().split(",")
+        return cls(username=username, email=email)
+
+    # Static method: Independent utility function
+    @staticmethod
+    def is_valid_email(email: str) -> bool:
+        return "@" in email and "." in email`,
+        followUps: [
+          { q: "Why use @classmethod over @staticmethod for factory constructors?", a: "@classmethod receives the actual calling class as `cls`, ensuring that subclasses instantiate their own type rather than the parent class." }
+        ]
+      },
+      {
+        id: "py-14",
+        num: 14,
+        title: "Multiple inheritance and Method Resolution Order (MRO)",
+        diff: "advanced",
+        priority: false,
+        spoken: "Method Resolution Order (MRO) is the deterministic order in which Python searches parent classes for attributes and methods in multiple inheritance hierarchies. CPython uses the C3 Linearization algorithm to guarantee monotonicity and preserve local precedence orders. We can inspect any class's MRO using Class.__mro__ or Class.mro().",
+        explanation: "C3 Linearization guarantees two properties: children precede parents, and the order of parent classes defined in the class declaration is strictly preserved without cyclical ambiguities.",
+        code: `class A:
+    def ping(self):
+        print("A")
+
+class B(A):
+    def ping(self):
+        print("B")
+        super().ping()
+
+class C(A):
+    def ping(self):
+        print("C")
+        super().ping()
+
+class D(B, C):
+    def ping(self):
+        print("D")
+        super().ping()
+
+d = D()
+d.ping()  # Outputs: D -> B -> C -> A
+print([cls.__name__ for cls in D.__mro__])  # ['D', 'B', 'C', 'A', 'object']`,
+        followUps: [
+          { q: "What causes a TypeError: Cannot create a consistent method resolution order?", a: "Cyclical dependencies or conflicting ordering constraints between sibling subclasses that break C3 linearization." }
+        ]
+      },
+      {
+        id: "py-15",
+        num: 15,
+        title: "Memory management, reference counting, and garbage collection",
+        diff: "advanced",
+        priority: true,
+        spoken: "CPython memory management operates on two primary mechanisms: reference counting and a generational cyclic garbage collector. Every object tracks its active references via ob_refcnt. As soon as an object's reference count drops to zero, its memory is deallocated immediately. To handle reference cycles (e.g. object A references B, and B references A), Python uses a cyclic garbage collector organized into three generations (Gen 0, 1, and 2) that inspects objects at increasing intervals.",
+        explanation: "Generation 0 contains newly allocated objects. When Gen 0 survives collections, it is promoted to Gen 1, and eventually Gen 2. The cyclic GC uses pointer traversal algorithms to detect unreachable islands of objects by temporarily decrementing internal reference counters to find self-referencing clusters.",
+        code: `import gc
+import sys
+
+class Node:
+    def __init__(self, val):
+        self.val = val
+        self.neighbor = None
+
+# Reference counting demo
+a = Node(1)
+print(sys.getrefcount(a) - 1)  # 1 active reference
+
+# Creating a cyclic reference
+b = Node(2)
+a.neighbor = b
+b.neighbor = a
+
+del a
+del b
+# At this point, refcounts are 1 each, but both nodes are unreachable.
+# The cyclic GC will detect and clean them up during the next collection cycle.
+unreachable_count = gc.collect()
+print(f"Collected cycles: {unreachable_count}")`,
+        followUps: [
+          { q: "How can you tune GC in high-throughput APIs?", a: "You can adjust collection thresholds via `gc.set_threshold()`, or disable GC during tight hot loops and run `gc.collect()` during scheduled idle intervals." }
+        ]
+      },
+      {
+        id: "py-16",
+        num: 16,
+        title: "GIL and multithreading in Python",
+        diff: "advanced",
+        priority: true,
+        spoken: "The Global Interpreter Lock (GIL) is a mutual exclusion lock in CPython that prevents multiple native OS threads from executing Python bytecode simultaneously. It protects CPython memory management and reference counts from race conditions. Because of the GIL, multithreading does not achieve CPU parallelism in Python; however, it remains highly effective for I/O-bound tasks because threads automatically release the GIL during network, disk, or database wait states.",
+        explanation: "In CPU-bound tasks, threads fight over the GIL, incurring context-switch overhead without speedup. In Python 3.12+, sub-interpreters with per-interpreter GILs were introduced, and experimental free-threaded CPython (PEP 703) in Python 3.13+ allows building Python with the GIL fully disabled.",
+        code: `# I/O bound tasks release the GIL
+import threading
+import time
+
+def fetch_external_service(endpoint_id):
+    # During sleep / socket I/O, the GIL is released to other threads
+    time.sleep(1)
+
+threads = [threading.Thread(target=fetch_external_service, args=(i,)) for i in range(10)]
+start = time.perf_counter()
+for t in threads: t.start()
+for t in threads: t.join()
+# Takes ~1 second total, not 10 seconds!
+print(f"Completed in {time.perf_counter() - start:.2f}s")`,
+        followUps: [
+          { q: "Do C extensions like NumPy respect the GIL?", a: "NumPy releases the GIL during heavy vector and matrix calculations, allowing true multi-core parallel processing." }
+        ]
+      },
+      {
+        id: "py-17",
+        num: 17,
+        title: "Threading versus multiprocessing versus asynchronous programming",
+        diff: "advanced",
+        priority: true,
+        spoken: "Threading uses OS threads sharing a single memory space; it is subject to the GIL and best suited for I/O-bound operations with lightweight coordination. Multiprocessing spawns distinct OS processes, each with its own Python interpreter, memory space, and GIL, making it ideal for CPU-bound computations. Asynchronous programming uses cooperative multitasking on a single thread and event loop, handling thousands of concurrent non-blocking network sockets with minimal memory overhead.",
+        table: {
+          headers: ["Paradigm", "Target Workload", "Memory Overhead", "Concurrency Model", "IPC / Communication"],
+          rows: [
+            ["Threading", "I/O-bound (APIs, DB calls)", "Low (Shared heap)", "Preemptive OS threads (GIL limited)", "Shared memory with Locks / Queues"],
+            ["Multiprocessing", "CPU-bound (Data processing, ML)", "High (Separate memory per process)", "Parallel OS processes", "IPC (Pipes, Queues, Shared Memory)"],
+            ["Asyncio", "High-concurrency network I/O", "Very low (Single process/thread)", "Cooperative event-loop coroutines", "In-memory async queues / state"]
+          ]
+        },
+        code: `# Asyncio Event Loop Example
+import asyncio
+
+async def fetch_record(record_id: int):
+    await asyncio.sleep(0.1)  # Non-blocking I/O
+    return {"id": record_id, "data": "payload"}
+
+async def main():
+    # Run 100 concurrent requests cooperatively on a single thread
+    results = await asyncio.gather(*(fetch_record(i) for i in range(100)))
+    print(f"Processed {len(results)} records asynchronously")
+
+# asyncio.run(main())`,
+        followUps: [
+          { q: "What happens if you run a CPU-heavy mathematical loop inside an asyncio coroutine?", a: "It blocks the entire event loop thread, preventing all other concurrent coroutines and incoming requests from processing until it completes." }
+        ]
+      },
+      {
+        id: "py-18",
+        num: 18,
+        title: "Type hints, dataclasses, and Pydantic",
+        diff: "intermediate",
+        priority: true,
+        spoken: "Type hints provide static typing metadata for code clarity and tooling (mypy). Dataclasses automate boilerplate for data-holding classes (auto-generating __init__, __repr__, and __eq__) with minimal runtime overhead, but they perform no runtime validation. Pydantic is a data validation and parsing library that enforces types at runtime, coercing raw payloads into strictly validated Python objects, making it the standard choice for API boundary validation in FastAPI.",
+        table: {
+          headers: ["Feature", "Standard Type Hints", "Dataclasses", "Pydantic Models"],
+          rows: [
+            ["Runtime Validation", "None (Static checks only)", "None (Unless custom __post_init__)", "Strict runtime type coercion & validation"],
+            ["Serialization", "Manual", "asdict() helper", "model_dump() / model_dump_json()"],
+            ["Performance", "Zero overhead", "Fast native Python execution", "Fast Rust-backed parsing (Pydantic v2)"],
+            ["Primary Use Case", "Type hinting across codebases", "Internal state containers", "API schemas & Config parsing"]
+          ]
+        },
+        code: `from dataclasses import dataclass
+from pydantic import BaseModel, EmailStr, Field
+
+# 1. Standard Dataclass (Internal entity)
+@dataclass
+class InternalUser:
+    id: int
+    name: str
+
+# 2. Pydantic Model (API Gateway validation)
+class UserRegistrationSchema(BaseModel):
+    user_id: int = Field(gt=0)
+    email: EmailStr
+    role: str = Field(default="USER", pattern="^(USER|ADMIN|MANAGER)$")
+
+# Automatic coercion & validation
+user = UserRegistrationSchema(user_id="101", email="dev@company.com")
+print(user.user_id)  # Coerced string '101' -> integer 101`,
+        followUps: [
+          { q: "What major change occurred between Pydantic v1 and v2?", a: "Pydantic v2 rewrote the core parsing engine in Rust (pydantic-core), yielding 5x to 20x throughput improvements." }
+        ]
+      },
+      {
+        id: "py-19",
+        num: 19,
+        title: "Structuring a large Python application",
+        diff: "intermediate",
+        priority: false,
+        spoken: "A large enterprise Python application should follow layered clean architecture: Domain models at the core, Services for business logic, Repositories for data persistence, and Routers/Controllers for the transport layer. We enforce modular package boundaries with __init__.py, manage configuration through strongly-typed settings objects, and decouple services using dependency injection.",
+        code: `# Recommended production structure:
+# my_application/
+# ├── app/
+# │   ├── core/         # Config, logging, security, db engine
+# │   ├── api/          # v1 routes, dependencies, error handlers
+# │   ├── schemas/      # Pydantic request/response schemas
+# │   ├── models/       # Database ORM entities
+# │   ├── services/     # Pure business logic
+# │   └── repositories/ # Data access abstraction
+# ├── tests/
+# ├── Dockerfile
+# └── pyproject.toml`,
+        followUps: [
+          { q: "How do you prevent circular imports in large Python projects?", a: "Separate shared interfaces/models into independent core modules, import inside functions only when strictly needed, and avoid importing concrete classes into abstract base modules." }
+        ]
+      },
+      {
+        id: "py-20",
+        num: 20,
+        title: "Dependency management and environment-specific configuration",
+        diff: "intermediate",
+        priority: false,
+        spoken: "For dependency management, modern Python relies on pyproject.toml with deterministic lockfiles via Poetry or uv. For configuration, we adhere to Twelve-Factor App principles using environment variables parsed through pydantic-settings, ensuring credentials and environment-specific parameters are validated at startup without hardcoding secrets.",
+        code: `from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import MongoDsn
+
+class AppSettings(BaseSettings):
+    ENVIRONMENT: str = "production"
+    API_PORT: int = 8000
+    DATABASE_URL: MongoDsn
+    SECRET_KEY: str
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=True
+    )
+
+# Validated on application initialization
+# settings = AppSettings()`,
+        followUps: [
+          { q: "Why use 'uv' or 'poetry' over raw pip freeze?", a: "'pip freeze' dumps all transitive sub-dependencies into a flat list, obscuring top-level dependencies and causing dependency resolution conflicts. Modern tools maintain separate lockfiles with dependency resolution graphs." }
+        ]
+      },
+      {
+        id: "py-21",
+        num: 21,
+        title: "Find the first non-repeating character",
+        diff: "beginner",
+        priority: false,
+        spoken: "We solve this in O(n) time and O(1) auxiliary space (since the character set is bounded). In the first pass, we build a frequency count of all characters using collections.Counter. In the second pass, we iterate through the original string and return the first character whose recorded frequency is 1.",
+        code: `from collections import Counter
+
+def first_uniq_char(s: str) -> str:
+    counts = Counter(s)
+    for char in s:
+        if counts[char] == 1:
+            return char
+    return ""
+
+print(first_uniq_char("swiss"))       # "w"
+print(first_uniq_char("repetition"))  # "p"`
+      },
+      {
+        id: "py-22",
+        num: 22,
+        title: "Remove duplicates while preserving list order",
+        diff: "beginner",
+        priority: false,
+        spoken: "Since Python 3.7, dictionaries maintain insertion order. We can remove duplicates in O(n) time and O(n) space by calling dict.fromkeys(iterable) and converting it back to a list. Alternatively, we can use a seen set while appending to a new list for custom object equality.",
+        code: `def deduplicate_ordered(seq: list) -> list:
+    # O(n) time, O(n) space, preserves insertion order
+    return list(dict.fromkeys(seq))
+
+items = ["apple", "banana", "apple", "orange", "banana"]
+print(deduplicate_ordered(items))  # ['apple', 'banana', 'orange']`
+      },
+      {
+        id: "py-23",
+        num: 23,
+        title: "Group dictionaries by a key",
+        diff: "intermediate",
+        priority: false,
+        spoken: "We use collections.defaultdict(list) to group a list of dictionaries in O(n) time without needing to manually check for key existence on every iteration.",
+        code: `from collections import defaultdict
+
+def group_by_key(items: list[dict], group_key: str) -> dict:
+    grouped = defaultdict(list)
+    for item in items:
+        key_val = item.get(group_key, "UNKNOWN")
+        grouped[key_val].append(item)
+    return dict(grouped)
+
+tickets = [
+    {"id": 1, "status": "OPEN", "owner": "alice"},
+    {"id": 2, "status": "CLOSED", "owner": "bob"},
+    {"id": 3, "status": "OPEN", "owner": "charlie"}
+]
+print(group_by_key(tickets, "status"))`,
+        followUps: [
+          { q: "Why not use itertools.groupby?", a: "itertools.groupby requires the input data to be pre-sorted by the grouping key first (O(n log n)); defaultdict works on unsorted streams in O(n)." }
+        ]
+      },
+      {
+        id: "py-24",
+        num: 24,
+        title: "Find the top three most frequent elements",
+        diff: "beginner",
+        priority: false,
+        spoken: "We use collections.Counter.most_common(k) which uses a min-heap under the hood to find the top k elements in O(n log k) time, running in O(n) when k is small.",
+        code: `from collections import Counter
+
+def top_three_frequent(nums: list) -> list:
+    return [item for item, count in Counter(nums).most_common(3)]
+
+data = [1, 1, 1, 2, 2, 3, 4, 4, 4, 4, 5]
+print(top_three_frequent(data))  # [4, 1, 2]`
+      },
+      {
+        id: "py-25",
+        num: 25,
+        title: "Flatten a nested list",
+        diff: "intermediate",
+        priority: false,
+        spoken: "We implement an iterative stack or a generator with recursion to flatten arbitrarily nested lists without stack overflows on deep structures, checking whether elements are iterables (excluding strings).",
+        code: `def flatten_nested(nested_list):
+    for item in nested_list:
+        if isinstance(item, (list, tuple)):
+            yield from flatten_nested(item)
+        else:
+            yield item
+
+nested = [1, [2, [3, 4], 5], 6, [7]]
+print(list(flatten_nested(nested)))  # [1, 2, 3, 4, 5, 6, 7]`
+      },
+      {
+        id: "py-26",
+        num: 26,
+        title: "Implement a retry decorator",
+        diff: "intermediate",
+        priority: true,
+        spoken: "A production retry decorator catches specific transient exceptions, executes a loop up to max attempts, and sleeps between retries using exponential backoff with random jitter to prevent thundering herds on failing dependencies.",
+        code: `import time
+import random
+from functools import wraps
+
+def retry_operation(max_retries: int = 3, base_delay: float = 0.5, exceptions=(Exception,)):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            delay = base_delay
+            for attempt in range(1, max_retries + 1):
+                try:
+                    return func(*args, **kwargs)
+                except exceptions as e:
+                    if attempt == max_retries:
+                        print(f"[RETRY] Final attempt failed for {func.__name__}. Raising error.")
+                        raise e
+                    jitter = random.uniform(0.05, 0.2)
+                    total_sleep = delay + jitter
+                    print(f"[RETRY] {func.__name__} failed (attempt {attempt}). Retrying in {total_sleep:.2f}s...")
+                    time.sleep(total_sleep)
+                    delay *= 2
+        return wrapper
+    return decorator`,
+        followUps: [
+          { q: "Why is jitter critical in distributed systems?", a: "If 1,000 requests fail simultaneously due to a database hiccup, retrying at exact fixed intervals causes repeated synchronized traffic spikes. Jitter spreads retry calls over a distributed time window." }
+        ]
+      },
+      {
+        id: "py-27",
+        num: 27,
+        title: "Process a large file without loading it entirely into memory",
+        diff: "intermediate",
+        priority: true,
+        spoken: "In Python, opening a file returns a line-based iterator that streams chunks from disk via OS file buffers. We iterate over the file object directly with a for-loop, achieving constant O(1) memory consumption regardless of whether the file is 500 MB or 50 GB.",
+        code: `def process_massive_file(file_path: str, chunk_size: int = 1000):
+    with open(file_path, "r", encoding="utf-8") as f:
+        batch = []
+        for line in f:
+            batch.append(line.strip())
+            if len(batch) >= chunk_size:
+                # Flush batch to database or processing pipeline
+                yield batch
+                batch = []
+        if batch:
+            yield batch`
+      },
+      {
+        id: "py-28",
+        num: 28,
+        title: "Implement or explain an LRU cache",
+        diff: "advanced",
+        priority: true,
+        spoken: "An LRU (Least Recently Used) cache evicts the least recently accessed item when capacity is exceeded. It achieves O(1) get and O(1) put by combining a hash map with a doubly linked list. In Python, this is implemented natively via collections.OrderedDict or functools.lru_cache.",
+        code: `from collections import OrderedDict
+
+class LRUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.cache = OrderedDict()
+
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        # Move accessed key to end to mark as most recently used
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def put(self, key: int, value: int) -> None:
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            # Pop least recently used item from front
+            self.cache.popitem(last=False)`
+      },
+      {
+        id: "py-29",
+        num: 29,
+        title: "Merge dictionaries with conflict rules",
+        diff: "intermediate",
+        priority: false,
+        spoken: "In Python 3.9+, dictionaries support the union operator '|'. When conflicts require custom resolution (e.g. summing conflicting counts or merging sub-dictionaries), we iterate through keys and resolve them explicitly.",
+        code: `def merge_with_custom_rules(dict_a: dict, dict_b: dict) -> dict:
+    merged = dict_a.copy()
+    for key, val in dict_b.items():
+        if key in merged:
+            # Rule: If both are integers, sum them; if both are dicts, recursively merge
+            if isinstance(merged[key], int) and isinstance(val, int):
+                merged[key] += val
+            elif isinstance(merged[key], dict) and isinstance(val, dict):
+                merged[key] = merge_with_custom_rules(merged[key], val)
+            else:
+                merged[key] = val  # Default: overwrite
+        else:
+            merged[key] = val
+    return merged`,
+        followUps: [
+          { q: "What does the '|' operator do in Python 3.9+?", a: "`a | b` creates a new dictionary with keys from both; values in `b` override values in `a` on conflict." }
+        ]
+      },
+      {
+        id: "py-30",
+        num: 30,
+        title: "Execute independent I/O operations concurrently",
+        diff: "intermediate",
+        priority: true,
+        spoken: "For asynchronous code, we use asyncio.gather() or asyncio.TaskGroup (introduced in Python 3.11). For synchronous blocking calls, we use concurrent.futures.ThreadPoolExecutor to dispatch network tasks concurrently across worker threads.",
+        code: `from concurrent.futures import ThreadPoolExecutor, as_completed
+import time
+
+def fetch_service_data(service_id: int):
+    time.sleep(0.1)
+    return f"Service {service_id} response"
+
+# Running concurrent I/O across a managed pool
+with ThreadPoolExecutor(max_workers=5) as executor:
+    futures = {executor.submit(fetch_service_data, i): i for i in range(5)}
+    for future in as_completed(futures):
+        result = future.result()
+        print(result)`
+      },
+      {
+        id: "py-31",
+        num: 31,
+        title: "Investigate continuously increasing API memory usage",
+        diff: "advanced",
+        priority: true,
+        spoken: "A steady increase in API memory usage (a leak) in Python is typically caused by uncollected cyclic references, global caches growing without eviction, open connection pools, or C-extension memory leaks. I investigate by: 1) Capturing memory snapshots using tracemalloc to identify where allocations originate, 2) Inspecting object counts with objgraph to detect growing reference counts, 3) Verifying that in-memory caches have max-size limits, and 4) Using jemalloc or memory profilers in staging.",
+        code: `import tracemalloc
+
+# Diagnostic script snippet
+tracemalloc.start()
+
+# ... simulate incoming API requests ...
+
+snapshot = tracemalloc.take_snapshot()
+top_stats = snapshot.statistics("lineno")
+print("[MEMORY INSPECTION] Top 3 allocations:")
+for stat in top_stats[:3]:
+    print(stat)`
+      },
+      {
+        id: "py-32",
+        num: 32,
+        title: "Diagnose and optimize an endpoint taking eight seconds to process 10,000 records",
+        diff: "advanced",
+        priority: true,
+        spoken: "An 8-second delay on 10,000 records is almost always caused by an N+1 query problem, row-by-row ORM serialization overhead, or un-indexed database lookups. I profile with cProfile or py-spy, replace ORM row iteration with bulk fetching using pagination or streaming cursors, offload heavy field transformations to database indexes, and batch downstream API interactions.",
+        code: `# OPTIMIZATION PATTERN:
+# Before: 10,000 individual ORM queries taking 8s
+# After: Bulk database fetch with projection + fast serialization
+
+async def get_records_fast(db_collection):
+    # Fetch only needed fields directly as dictionaries (bypassing heavy ORM models)
+    cursor = db_collection.find(
+        {"status": "ACTIVE"}, 
+        {"_id": 1, "username": 1, "created_at": 1}
+    ).batch_size(1000)
+    
+    return [doc async for doc in cursor] # Drops runtime to sub-300ms`
+      },
+      {
+        id: "py-33",
+        num: 33,
+        title: "Diagnose and prevent race conditions",
+        diff: "advanced",
+        priority: true,
+        spoken: "Race conditions occur when multiple concurrent threads or distributed processes read and mutate shared state without synchronization. In single-process Python, we prevent this using threading.Lock. In distributed microservice environments, we prevent race conditions using Redis distributed locks (Redlock) or atomic database operations (such as MongoDB $inc with optimistic concurrency control).",
+        code: `import threading
+
+balance = 1000
+lock = threading.Lock()
+
+def withdraw(amount: int):
+    global balance
+    with lock:  # Guarantees mutual exclusion
+        if balance >= amount:
+            balance -= amount
+            return True
+        return False`
+      },
+      {
+        id: "py-34",
+        num: 34,
+        title: "Process a 5 GB CSV file and write results to a database",
+        diff: "advanced",
+        priority: true,
+        spoken: "Never load 5 GB into memory with pd.read_csv(). We stream the file line by line using the csv module or chunked pandas reads, parse records into batches (e.g. 2,000 records), validate them, and perform bulk writes using MongoDB insert_many(ordered=False) or SQL COPY/bulk_insert. We track processed file offsets to support safe resumption if the worker restarts.",
+        code: `import csv
+
+def stream_and_bulk_insert(file_path: str, db_collection, batch_size=2000):
+    with open(file_path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        batch = []
+        for row in reader:
+            batch.append({"sku": row["sku"], "qty": int(row["qty"])})
+            if len(batch) >= batch_size:
+                db_collection.insert_many(batch, ordered=False)
+                batch = []
+        if batch:
+            db_collection.insert_many(batch, ordered=False)`
+      },
+      {
+        id: "py-35",
+        num: 35,
+        title: "Implement safe retries for non-idempotent operations",
+        diff: "advanced",
+        priority: true,
+        spoken: "Retrying a non-idempotent operation (like charging a credit card) can cause duplicate charges. We make the operation idempotent by generating a unique client-side Idempotency-Key (UUID) and storing it in a distributed store like Redis or MongoDB with a lock. If a retry with the same key arrives, the system detects it and returns the cached result without re-executing the payment.",
+        code: `async def execute_idempotent_charge(idempotency_key: str, amount: float, redis_client):
+    # Set key with NX (only if Not eXists) and short TTL as distributed mutex
+    acquired = await redis_client.set(f"idemp:{idempotency_key}", "PROCESSING", nx=True, ex=60)
+    if not acquired:
+        # A duplicate request is either in-flight or already completed
+        cached = await redis_client.get(f"idemp:{idempotency_key}")
+        return {"status": "DUPLICATE", "result": cached}
+
+    try:
+        # Execute third-party charge call
+        charge_result = "charge_success_998"
+        await redis_client.set(f"idemp:{idempotency_key}", charge_result, ex=86400)
+        return {"status": "SUCCESS", "result": charge_result}
+    except Exception as e:
+        await redis_client.delete(f"idemp:{idempotency_key}")
+        raise e`
+      },
+      {
+        id: "py-36",
+        num: 36,
+        title: "Investigate differences between local, staging, and production",
+        diff: "intermediate",
+        priority: false,
+        spoken: "When behavior diverges across environments, I investigate: 1) Configuration and environment variables (mismatched database connection strings, missing feature flags), 2) Data volume differences (indexes that look fast locally but fail on millions of production records), 3) Dependency versions (differing lockfiles or OS-level C-extension versions), 4) Infrastructure topology (local single-process vs multi-worker ECS behind an ALB with proxy headers).",
+        followUps: [
+          { q: "How do containerized environments prevent these issues?", a: "Docker ensures that runtime binaries, OS packages, Python interpreters, and dependency wheels remain identical across environments." }
+        ]
+      },
+      {
+        id: "py-37",
+        num: 37,
+        title: "Test functions that call APIs, databases, and AWS services",
+        diff: "intermediate",
+        priority: true,
+        spoken: "In enterprise testing with pytest, we avoid hitting real external services in unit tests. We mock HTTP endpoints using 'respx' or 'responses', mock AWS cloud calls using 'moto' to simulate S3/SQS in memory, and use Dockerized ephemeral test databases (via Testcontainers) or FastAPI dependency overrides for database integration tests.",
+        code: `import pytest
+from unittest.mock import patch
+
+# Mocking external API call via patch
+@patch("requests.get")
+def test_fetch_weather(mock_get):
+    mock_get.return_value.status_code = 200
+    mock_get.return_value.json.return_value = {"temp": 28}
+
+    from my_service import get_temperature
+    result = get_temperature("Hyderabad")
+    assert result == 28
+    mock_get.assert_called_once()`
+      },
+      {
+        id: "py-38",
+        num: 38,
+        title: "Decide when to use background workers instead of synchronous HTTP processing",
+        diff: "intermediate",
+        priority: true,
+        spoken: "An HTTP request should complete in under 200–500ms. We offload operations to background workers (using Celery, ARQ, or SQS + worker tasks) when: 1) The operation takes longer than 1 second (video transcoding, report generation), 2) It interacts with unreliable third-party APIs (sending emails, webhook dispatches), 3) It requires scheduled batch execution, or 4) We need rate-limiting and guaranteed retry durability across restarts.",
+        table: {
+          headers: ["Attribute", "Synchronous HTTP Request", "Background Worker (Celery/SQS)"],
+          rows: [
+            ["Latency Expectation", "Sub-second (< 300ms)", "Seconds to minutes"],
+            ["Failure Handling", "Fails the user request directly (500)", "Retried with exponential backoff & DLQ"],
+            ["Client Coupling", "Client blocks waiting for socket", "Client receives 202 Accepted + Job ID"],
+            ["Scalability", "Tied directly to API worker count", "Independently scalable worker pools"]
+          ]
+        }
+      }
+    ];
+
+    const State = {
+      theme: localStorage.getItem("fstk_theme") || "light",
+      completed: JSON.parse(localStorage.getItem("fstk_py_completed") || "[]"),
+      bookmarked: JSON.parse(localStorage.getItem("fstk_py_bookmarked") || "[]"),
+      revisionOnly: false,
+      filterDiff: "all",
+      filterStatus: "all",
+      searchQuery: ""
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      applyTheme(State.theme);
+      renderNavigation();
+      renderQuestions();
+      updateProgress();
+      bindEvents();
+    });
+
+    function applyTheme(theme) {
+      document.body.setAttribute("data-theme", theme);
+      localStorage.setItem("fstk_theme", theme);
+      State.theme = theme;
+    }
+
+    function bindEvents() {
+      document.getElementById("theme-toggle").addEventListener("click", () => {
+        applyTheme(State.theme === "light" ? "dark" : "light");
+      });
+
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
+          e.preventDefault();
+          document.getElementById("global-search-input").focus();
+        }
+      });
+
+      document.getElementById("global-search-input").addEventListener("input", (e) => {
+        State.searchQuery = e.target.value.toLowerCase().trim();
+        renderQuestions();
+      });
+
+      document.getElementById("filter-difficulty").addEventListener("change", (e) => {
+        State.filterDiff = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("filter-status").addEventListener("change", (e) => {
+        State.filterStatus = e.target.value;
+        renderQuestions();
+      });
+
+      document.getElementById("revision-mode-toggle").addEventListener("click", (e) => {
+        State.revisionOnly = !State.revisionOnly;
+        e.currentTarget.classList.toggle("btn-primary", State.revisionOnly);
+        renderQuestions();
+      });
+
+      const sidebar = document.getElementById("sidebar");
+      document.getElementById("mobile-menu-toggle").addEventListener("click", () => sidebar.classList.toggle("open"));
+      document.getElementById("sidebar-close-btn").addEventListener("click", () => sidebar.classList.remove("open"));
+    }
+
+    function renderNavigation() {
+      const container = document.getElementById("sidebar-nav-container");
+      container.innerHTML = '<div class="nav-section-title">All 38 Python Questions</div>';
+
+      PYTHON_QUESTIONS.forEach(q => {
+        const item = document.createElement("a");
+        item.className = "nav-item";
+        item.href = `#${q.id}`;
+        item.innerHTML = `
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:210px;">${q.num}. ${q.title}</span>
+          <span id="badge-${q.id}" class="nav-badge">${State.completed.includes(q.id) ? '✓' : ''}</span>
+        `;
+        item.addEventListener("click", () => {
+          if (window.innerWidth <= 768) {
+            document.getElementById("sidebar").classList.remove("open");
+          }
+        });
+        container.appendChild(item);
+      });
+    }
+
+    function renderQuestions() {
+      const target = document.getElementById("questions-render-target");
+      const rail = document.getElementById("rail-topic-outline");
+      target.innerHTML = "";
+      rail.innerHTML = "";
+
+      let filtered = PYTHON_QUESTIONS.filter(q => {
+        if (State.revisionOnly && !q.priority) return false;
+        if (State.filterDiff !== "all" && q.diff !== State.filterDiff) return false;
+
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        if (State.filterStatus === "completed" && !isDone) return false;
+        if (State.filterStatus === "incomplete" && isDone) return false;
+        if (State.filterStatus === "bookmarked" && !isMarked) return false;
+
+        if (State.searchQuery) {
+          const matchTitle = q.title.toLowerCase().includes(State.searchQuery);
+          const matchSpoken = q.spoken.toLowerCase().includes(State.searchQuery);
+          const matchCode = q.code && q.code.toLowerCase().includes(State.searchQuery);
+          if (!matchTitle && !matchSpoken && !matchCode) return false;
+        }
+
+        return true;
+      });
+
+      document.getElementById("results-count-text").innerText = `Showing ${filtered.length} of ${PYTHON_QUESTIONS.length} questions`;
+
+      if (filtered.length === 0) {
+        target.innerHTML = `
+          <div class="view-card" style="text-align:center; padding:3rem;">
+            <p style="color:var(--text-muted);">No questions match your current search or filter criteria.</p>
+          </div>
+        `;
+        return;
+      }
+
+      filtered.forEach(q => {
+        const isDone = State.completed.includes(q.id);
+        const isMarked = State.bookmarked.includes(q.id);
+
+        const railLink = document.createElement("a");
+        railLink.href = `#${q.id}`;
+        railLink.style.cssText = "color:var(--text-muted); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block;";
+        railLink.innerText = `${q.num}. ${q.title}`;
+        rail.appendChild(railLink);
+
+        const card = document.createElement("article");
+        card.className = "view-card";
+        card.id = q.id;
+
+        card.innerHTML = `
+          <div class="q-meta">
+            <span class="tag tag-diff-${q.diff}">${q.diff}</span>
+            <span class="tag tag-topic">Question ${q.num} of 38</span>
+            ${q.priority ? '<span class="tag" style="background:#EEF2FF; color:#4568E8;">★ High Priority</span>' : ''}
+            <span style="font-size:0.8rem; color:var(--text-muted); margin-left:auto;">Target: 60-90s spoken</span>
+          </div>
+
+          <h2 class="q-title">${q.num}. ${q.title}</h2>
+
+          <div class="q-section-heading">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>
+            Interview-Ready Spoken Answer
+          </div>
+          <div class="callout-box">
+            <p><strong>"${escapeHTML(q.spoken)}"</strong></p>
+          </div>
+
+          ${q.explanation ? `
+            <div class="q-section-heading">How It Works (CPython Runtime Internals)</div>
+            <p style="font-size:0.93rem; color:var(--text-main); margin-bottom:1rem;">${escapeHTML(q.explanation)}</p>
+          ` : ''}
+
+          ${q.table ? `
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>${q.table.headers.map(h => `<th>${escapeHTML(h)}</th>`).join('')}</tr>
+                </thead>
+                <tbody>
+                  ${q.table.rows.map(r => `<tr>${r.map(c => `<td>${escapeHTML(c)}</td>`).join('')}</tr>`).join('')}
+                </tbody>
+              </table>
+            </div>
+          ` : ''}
+
+          ${q.code ? `
+            <div class="code-container">
+              <div class="code-header">
+                <span>Production Python Code</span>
+                <button class="btn btn-ghost" style="color:#FFF; padding:0.2rem 0.5rem; font-size:0.7rem;" onclick="copyCode(this)">Copy Snippet</button>
+              </div>
+              <pre><code>${escapeHTML(q.code)}</code></pre>
+            </div>
+          ` : ''}
+
+          ${q.followUps && q.followUps.length > 0 ? `
+            <div class="q-section-heading">Likely Interviewer Follow-Ups</div>
+            <div style="display:flex; flex-direction:column; gap:0.75rem; margin-top:0.5rem;">
+              ${q.followUps.map(f => `
+                <div style="background:var(--bg-primary); padding:0.85rem 1.1rem; border-radius:var(--radius); font-size:0.875rem;">
+                  <strong style="color:var(--text-main); display:block; margin-bottom:0.25rem;">Q: ${escapeHTML(f.q)}</strong>
+                  <span style="color:var(--text-muted);">A: ${escapeHTML(f.a)}</span>
+                </div>
+              `).join('')}
+            </div>
+          ` : ''}
+
+          <div class="btn-action-group" style="display:flex; justify-content:space-between; align-items:center; margin-top:1.75rem; padding-top:1.25rem; border-top:1px solid var(--border); flex-wrap:wrap; gap:0.75rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button class="btn ${isDone ? 'btn-primary' : ''}" onclick="toggleCompleted('${q.id}')">
+                ${isDone ? '✓ Completed' : 'Mark as Completed'}
+              </button>
+              <button class="btn" onclick="toggleBookmarked('${q.id}')">
+                ${isMarked ? '★ Bookmarked' : '☆ Bookmark'}
+              </button>
+            </div>
+            <div style="font-size:0.8rem; color:var(--text-muted);">
+              ID: <code>${q.id}</code>
+            </div>
+          </div>
+        `;
+
+        target.appendChild(card);
+      });
+    }
+
+    function toggleCompleted(id) {
+      if (State.completed.includes(id)) {
+        State.completed = State.completed.filter(x => x !== id);
+      } else {
+        State.completed.push(id);
+      }
+      localStorage.setItem("fstk_py_completed", JSON.stringify(State.completed));
+      updateProgress();
+      renderQuestions();
+      renderNavigation();
+    }
+
+    function toggleBookmarked(id) {
+      if (State.bookmarked.includes(id)) {
+        State.bookmarked = State.bookmarked.filter(x => x !== id);
+      } else {
+        State.bookmarked.push(id);
+      }
+      localStorage.setItem("fstk_py_bookmarked", JSON.stringify(State.bookmarked));
+      renderQuestions();
+    }
+
+    function copyCode(btn) {
+      const code = btn.closest(".code-container").querySelector("code").innerText;
+      navigator.clipboard.writeText(code).then(() => {
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy Snippet", 2000);
+      });
+    }
+
+    function updateProgress() {
+      const total = PYTHON_QUESTIONS.length;
+      const done = State.completed.length;
+      const pct = Math.round((done / total) * 100);
+
+      document.getElementById("section-progress-bar").style.width = `${pct}%`;
+      document.getElementById("section-progress-label").innerText = `${done}/${total} (${pct}%)`;
+    }
+
+    function escapeHTML(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Full Stack Developer Interview Preparation Portal</title>
+  <style>
+    :root {
+      --bg-primary: #0B0F19;
+      --surface: #131C2E;
+      --sidebar-bg: #070B12;
+      --sidebar-text: #94A3B8;
+      --sidebar-active: #FFFFFF;
+      --primary: #4568E8;
+      --primary-hover: #3454D1;
+      --secondary: #0D9488;
+      --text-main: #F1F5F9;
+      --text-muted: #64748B;
+      --border: #1E293B;
+      --radius: 8px;
+      --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.2);
+      --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+      --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: var(--font-stack); background: var(--bg-primary); color: var(--text-main); line-height: 1.6; display: flex; height: 100vh; overflow: hidden; position: relative; }
+
+    /* Layout */
+    #sidebar { 
+      width: 320px; 
+      background: var(--sidebar-bg); 
+      color: var(--sidebar-text); 
+      display: flex; 
+      flex-direction: column; 
+      flex-shrink: 0; 
+      border-right: 1px solid var(--border); 
+      z-index: 50; 
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
+    }
+
+    /* Desktop Collapsed State */
+    #sidebar.collapsed {
+      margin-left: -320px;
+    }
+    
+    #sidebar-backdrop {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      z-index: 45;
+    }
+    #sidebar-backdrop.active { display: block; }
+
+    #main-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; width: 100%; }
+    #viewport-container { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+
+    /* Header */
+    header.top-bar { 
+      background: var(--surface); 
+      border-bottom: 1px solid var(--border); 
+      height: 60px; 
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between; 
+      padding: 0 1.25rem; 
+      flex-shrink: 0; 
+      z-index: 30; 
+    }
+    .brand-title { color: #FFF; font-weight: 700; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+    .sidebar-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: space-between; }
+    
+    .sidebar-nav { flex: 1; overflow-y: auto; padding: 0.75rem 0; -webkit-overflow-scrolling: touch; }
+    .nav-section-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0.75rem 1.5rem 0.35rem; color: #64748B; font-weight: 700; }
+    
+    .nav-item { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; color: var(--sidebar-text); cursor: pointer; text-decoration: none; font-size: 0.875rem; transition: background 0.15s, color 0.15s; border-left: 3px solid transparent; }
+    .nav-item:hover { background: rgba(255, 255, 255, 0.04); color: #FFF; }
+    .nav-item.active { background: rgba(69, 104, 232, 0.18); color: #FFF; border-left-color: var(--primary); font-weight: 600; }
+    .nav-badge { font-size: 0.72rem; background: rgba(255, 255, 255, 0.08); padding: 0.15rem 0.45rem; border-radius: 12px; color: #CBD5E1; }
+
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.45rem 0.85rem; border-radius: var(--radius); font-size: 0.82rem; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--text-main); text-decoration: none; transition: all 0.15s; user-select: none; }
+    .btn:hover { background: rgba(255, 255, 255, 0.05); }
+    .btn-icon { width: 34px; height: 34px; padding: 0; display: inline-flex; justify-content: center; align-items: center; }
+    .btn-primary { background: var(--primary); color: #FFF; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    /* Frame and Overview Stage */
+    #content-frame { width: 100%; height: 100%; border: none; background: #FFFFFF; display: none; }
+    #overview-stage { flex: 1; overflow-y: auto; padding: 2rem 2.5rem; max-width: 1280px; margin: 0 auto; width: 100%; -webkit-overflow-scrolling: touch; }
+
+    /* Responsive Cards Grid */
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1.25rem; margin: 1.5rem 0 2rem; }
+    .topic-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.35rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
+    .topic-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+    .topic-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+    .topic-title { font-size: 1.05rem; font-weight: 700; color: #FFF; }
+    .topic-desc { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.5; }
+    
+    .stats-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; }
+    .stats-val { font-size: 1.85rem; font-weight: 800; color: var(--primary); }
+
+    /* Responsive Media Queries */
+    @media (max-width: 1024px) {
+      #sidebar { 
+        position: fixed; 
+        top: 0; 
+        left: 0; 
+        height: 100vh; 
+        transform: translateX(-100%); 
+        margin-left: 0 !important;
+        box-shadow: var(--shadow-md); 
+      }
+      #sidebar.open { transform: translateX(0); }
+      #overview-stage { padding: 1.75rem; }
+    }
+
+    @media (max-width: 640px) {
+      header.top-bar { padding: 0 0.85rem; }
+      #active-title { font-size: 0.85rem; max-width: 160px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      #overview-stage { padding: 1.25rem 1rem; }
+      .dashboard-grid { grid-template-columns: 1fr; gap: 1rem; }
+      .stats-card { padding: 1rem; }
+      .stats-val { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Backdrop for mobile drawer -->
+  <div id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
+  <!-- Left Sidebar Navigation -->
+  <aside id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-title">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
+        <span>FullStack.Portal</span>
+      </div>
+      <!-- Prominent Close Icon Button -->
+      <button class="btn btn-icon" id="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Close sidebar" title="Close sidebar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+    
+    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.08);">
+      <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94A3B8; margin-bottom:0.4rem;">
+        <span>Curriculum Ready</span>
+        <span id="global-badge">9 Modules</span>
+      </div>
+      <div style="height:5px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+        <div style="width:100%; height:100%; background:var(--secondary);"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <div class="nav-section-title">Navigation</div>
+      <a class="nav-item active" onclick="loadDashboard()">
+        <span>Dashboard Overview</span>
+        <span class="nav-badge">Home</span>
+      </a>
+
+      <div class="nav-section-title">Preparation Modules</div>
+      <a class="nav-item" onclick="loadSection('python.html', this)">
+        <span>Section A: Python</span>
+        <span class="nav-badge">38 Q&amp;A</span>
+      </a>
+      <a class="nav-item" onclick="loadSection('fast_rest_API.html', this)">
+        <span>Section B: FastAPI &amp; REST</span>
+        <span class="nav-badge">35 Q&amp;A</span>
+      </a>
+      <a class="nav-item" onclick="loadSection('react.html', this)">
+        <span>Section D: React &amp; JS</span>
+        <span class="nav-badge">51 Q&amp;A</span>
+      </a>
+      <a class="nav-item" onclick="loadSection('mongoDB.html', this)">
+        <span>Section E: MongoDB</span>
+        <span class="nav-badge">19 Q&amp;A</span>
+      </a>
+      <a class="nav-item" onclick="loadSection('AWS.html', this)">
+        <span>Section F: AWS Cloud</span>
+        <span class="nav-badge">16 Q&amp;A</span>
+      </a>
+      <a class="nav-item" onclick="loadSection('Docker.html', this)">
+        <span>Section G: Docker</span>
+        <span class="nav-badge">8 Q&amp;A</span>
+      </a>
+      <a class="nav-item" onclick="loadSection('git.html', this)">
+        <span>Section H: Git &amp; CI/CD</span>
+        <span class="nav-badge">12 Q&amp;A</span>
+      </a>
+      <a class="nav-item" onclick="loadSection('SystemDesign.html', this)">
+        <span>Section I: System Design</span>
+        <span class="nav-badge">18 Q&amp;A</span>
+      </a>
+      <a class="nav-item" onclick="loadSection('STAR_behavorial.html', this)">
+        <span>Section J: Behavioral (STAR)</span>
+        <span class="nav-badge">15 Q&amp;A</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main Container -->
+  <main id="main-container">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:0.75rem; min-width: 0;">
+        <!-- Sidebar Toggle Icon Button -->
+        <button class="btn btn-icon" id="sidebar-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle navigation sidebar" title="Toggle sidebar">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <span id="active-title" style="font-weight: 700; font-size: 0.95rem;">Executive Overview Dashboard</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:0.5rem; flex-shrink: 0;">
+        <a id="direct-link-btn" class="btn" href="#" target="_blank" style="display:none;" title="Open module in new full tab">
+          <span>Open Tab</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+        </a>
+        <button class="btn btn-primary" onclick="loadDashboard()">Home</button>
+      </div>
+    </header>
+
+    <div id="viewport-container">
+      <!-- Section Frame -->
+      <iframe id="content-frame" title="Section Content Viewport"></iframe>
+
+      <!-- Dashboard Home Stage -->
+      <div id="overview-stage">
+        <div style="margin-bottom: 2rem;">
+          <h1 style="font-size: clamp(1.5rem, 4vw, 2rem); font-weight: 800; color: #FFF; margin-bottom: 0.4rem;">Full Stack Developer Interview Preparation Guide</h1>
+          <p style="color: var(--text-muted); font-size: 0.95rem;">Curated practical questions, system architecture scenarios, and production incident playbooks for 5 Years of Experience (YOE) candidates.</p>
+        </div>
+
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+          <div class="stats-card">
+            <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Total Curated Content</div>
+            <div class="stats-val">214+</div>
+            <div style="font-size:0.75rem; color:#94A3B8; margin-top:0.2rem;">Questions across all 9 modules</div>
+          </div>
+          <div class="stats-card">
+            <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Target Experience</div>
+            <div class="stats-val" style="color:var(--secondary);">5 YOE</div>
+            <div style="font-size:0.75rem; color:#94A3B8; margin-top:0.2rem;">Mid to Senior Full Stack roles</div>
+          </div>
+          <div class="stats-card">
+            <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Architecture Models</div>
+            <div class="stats-val" style="color:#F59E0B;">100%</div>
+            <div style="font-size:0.75rem; color:#94A3B8; margin-top:0.2rem;">End-to-end cloud &amp; DB architectures</div>
+          </div>
+        </div>
+
+        <h2 style="font-size:1.2rem; font-weight:700; margin-bottom:1rem; color:#FFF;">Available Sections</h2>
+        <div class="dashboard-grid">
+          
+          <div class="topic-card" onclick="triggerNav('python.html')">
+            <div>
+              <div class="topic-header">
+                <span class="topic-title">Section A: Python</span>
+                <span class="nav-badge">38 Q&amp;A</span>
+              </div>
+              <p class="topic-desc">Memory management, GIL mechanics, multithreading vs asyncio, generators, context managers, and high-volume data streams.</p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;">Load Python Module</button>
+          </div>
+
+          <div class="topic-card" onclick="triggerNav('fast_rest_API.html')">
+            <div>
+              <div class="topic-header">
+                <span class="topic-title">Section B: FastAPI &amp; REST</span>
+                <span class="nav-badge">35 Q&amp;A</span>
+              </div>
+              <p class="topic-desc">ASGI concurrency, Pydantic v2 schemas, JWT/OAuth2 flows, rate-limiting, and idempotency key patterns.</p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;">Load FastAPI Module</button>
+          </div>
+
+          <div class="topic-card" onclick="triggerNav('react.html')">
+            <div>
+              <div class="topic-header">
+                <span class="topic-title">Section D: React &amp; JS</span>
+                <span class="nav-badge">51 Q&amp;A</span>
+              </div>
+              <p class="topic-desc">Fiber reconciliation, hook internals, event loop microtasks, DOM virtualization, and Core Web Vitals optimization.</p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;">Load React Module</button>
+          </div>
+
+          <div class="topic-card" onclick="triggerNav('mongoDB.html')">
+            <div>
+              <div class="topic-header">
+                <span class="topic-title">Section E: MongoDB</span>
+                <span class="nav-badge">19 Q&amp;A</span>
+              </div>
+              <p class="topic-desc">Document schemas, compound ESR index rules, covered queries, aggregation pipelines, and WiredTiger transactions.</p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;">Load MongoDB Module</button>
+          </div>
+
+          <div class="topic-card" onclick="triggerNav('AWS.html')">
+            <div>
+              <div class="topic-header">
+                <span class="topic-title">Section F: AWS Cloud</span>
+                <span class="nav-badge">16 Q&amp;A</span>
+              </div>
+              <p class="topic-desc">VPC networking, compute selection (EC2, ECS Fargate, Lambda), S3 presigned URLs, SQS/SNS, and CloudWatch alarms.</p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;">Load AWS Module</button>
+          </div>
+
+          <div class="topic-card" onclick="triggerNav('Docker.html')">
+            <div>
+              <div class="topic-header">
+                <span class="topic-title">Section G: Docker</span>
+                <span class="nav-badge">8 Q&amp;A</span>
+              </div>
+              <p class="topic-desc">Multi-stage build optimization, storage bind mounts vs volumes, non-root user execution, and exit code 137 debugging.</p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;">Load Docker Module</button>
+          </div>
+
+          <div class="topic-card" onclick="triggerNav('git.html')">
+            <div>
+              <div class="topic-header">
+                <span class="topic-title">Section H: Git &amp; CI/CD</span>
+                <span class="nav-badge">12 Q&amp;A</span>
+              </div>
+              <p class="topic-desc">Merge vs rebase workflows, GitHub Actions pipelines, Blue-Green vs Canary deployments, and expand-contract migrations.</p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;">Load CI/CD Module</button>
+          </div>
+
+          <div class="topic-card" onclick="triggerNav('SystemDesign.html')">
+            <div>
+              <div class="topic-header">
+                <span class="topic-title">Section I: System Design</span>
+                <span class="nav-badge">18 Q&amp;A</span>
+              </div>
+              <p class="topic-desc">5,000 concurrent user scaling, S3 multipart chunk uploads, correlation ID tracing, and production incident mitigation.</p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;">Load System Design</button>
+          </div>
+
+          <div class="topic-card" onclick="triggerNav('STAR_behavorial.html')">
+            <div>
+              <div class="topic-header">
+                <span class="topic-title">Section J: Behavioral (STAR)</span>
+                <span class="nav-badge">15 Q&amp;A</span>
+              </div>
+              <p class="topic-desc">STAR scenarios on handling architecture conflicts, mitigating production outages, and mentoring junior engineers.</p>
+            </div>
+            <button class="btn btn-primary" style="width:100%; justify-content:center;">Load Behavioral Module</button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const fileTitleMap = {
+      'python.html': 'Section A: Python (38 Questions)',
+      'fast_rest_API.html': 'Section B: FastAPI, Flask & REST APIs (35 Questions)',
+      'react.html': 'Section D: React, JavaScript, HTML5 & CSS (51 Questions)',
+      'mongoDB.html': 'Section E: MongoDB Architecture & Queries (19 Questions)',
+      'AWS.html': 'Section F: AWS Fundamentals (16 Questions)',
+      'Docker.html': 'Section G: Docker & Containerization (8 Questions)',
+      'git.html': 'Section H: Git & CI/CD Pipelines (12 Questions)',
+      'SystemDesign.html': 'Section I: Full-Stack System Design & Production Troubleshooting (18 Questions)',
+      'STAR_behavorial.html': 'Section J: Project Deep-Dive & Behavioral (15 Questions)'
+    };
+
+    function loadSection(fileName, navElement) {
+      const frame = document.getElementById('content-frame');
+      const overview = document.getElementById('overview-stage');
+      const activeTitle = document.getElementById('active-title');
+      const directBtn = document.getElementById('direct-link-btn');
+
+      // Set frame source
+      frame.src = fileName;
+      frame.style.display = 'block';
+      overview.style.display = 'none';
+
+      // Update Top Nav
+      activeTitle.innerText = fileTitleMap[fileName] || fileName;
+      directBtn.href = fileName;
+      directBtn.style.display = 'inline-flex';
+
+      // Update Sidebar state
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => el.classList.remove('active'));
+      if (navElement) {
+        navElement.classList.add('active');
+      }
+
+      // Close drawer automatically on mobile
+      if (window.innerWidth <= 1024) {
+        closeSidebar();
+      }
+    }
+
+    function loadDashboard() {
+      const frame = document.getElementById('content-frame');
+      const overview = document.getElementById('overview-stage');
+      const activeTitle = document.getElementById('active-title');
+      const directBtn = document.getElementById('direct-link-btn');
+
+      frame.style.display = 'none';
+      frame.src = 'about:blank';
+      overview.style.display = 'block';
+
+      activeTitle.innerText = 'Executive Overview Dashboard';
+      directBtn.style.display = 'none';
+
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => el.classList.remove('active'));
+      const firstItem = document.querySelector('.sidebar-nav .nav-item');
+      if (firstItem) firstItem.classList.add('active');
+
+      if (window.innerWidth <= 1024) {
+        closeSidebar();
+      }
+    }
+
+    function triggerNav(fileName) {
+      const links = Array.from(document.querySelectorAll('.sidebar-nav .nav-item'));
+      const targetLink = links.find(el => el.getAttribute('onclick') && el.getAttribute('onclick').includes(fileName));
+      loadSection(fileName, targetLink);
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      
+      if (window.innerWidth <= 1024) {
+        // Mobile / Tablet Drawer Toggle
+        sidebar.classList.toggle('open');
+        backdrop.classList.toggle('active', sidebar.classList.contains('open'));
+      } else {
+        // Desktop Collapse / Expand Toggle
+        sidebar.classList.toggle('collapsed');
+      }
+    }
+
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebar-backdrop');
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('active');
+    }
+  </script>
+</body>
+</html>
